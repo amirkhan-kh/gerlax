@@ -1,0 +1,27 @@
+---
+description: Next.js App Router konventsiyalari
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend Qoidalari
+
+Arxitektura: docs/FRONTEND.md. Stack qat'iy: Next.js (App Router) + TypeScript + Tailwind CSS. Boshqa kutubxona — faqat foydalanuvchi tasdig'i bilan.
+
+## App Router
+
+- `app/` faqat routing: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx` yupqa bo'ladi, faqat kompozitsiya qiladi.
+- Default — Server Component. `"use client"` faqat interaktivlik (state, event, browser API) kerak bo'lganda, imkon qadar daraxtning pastki qismida.
+- Route-ga xos komponentlar route ichida `_components/` private papkada. Ikkinchi joyda kerak bo'lgandagina `components/` ga ko'chiriladi.
+- Route guruhlash: `(auth)`, `(dashboard)` — URL ga ta'sir qilmaydi, layout ajratadi.
+
+## Data
+
+- Server Component ichida to'g'ridan-to'g'ri fetch (`lib/api.ts` client orqali). Mutatsiyalar Server Actions bilan.
+- API tiplar `lib/types.ts` da — backend sxemalari bilan bir xil nomlanadi.
+
+## Taqiqlanadi
+
+- `useEffect` bilan data fetching (Server Component turganda).
+- Global state library qo'shish (so'ralmagan bo'lsa).
+- `any` type.

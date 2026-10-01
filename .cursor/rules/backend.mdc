@@ -1,0 +1,23 @@
+---
+description: Python backend konventsiyalari (FastAPI)
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Qoidalari
+
+Arxitektura: docs/BACKEND.md. Stack qat'iy: FastAPI + SQLAlchemy 2.0 (async) + Alembic + Pydantic v2 + PostgreSQL. Boshqa kutubxona — faqat foydalanuvchi tasdig'i bilan.
+
+## Kod joylashuvi
+
+- Router faqat HTTP qatlam: request qabul qiladi, service chaqiradi, response qaytaradi. Business logic router ichida yozilmaydi.
+- Business logic — `services/`, DB so'rovlar — `repositories/`, sxemalar — `schemas/`.
+- Har bir domen moduli o'z papkasida: `app/modules/<domen>/` (router, service, repository, schemas, models).
+
+## Konventsiyalar
+
+- Hamma endpoint async. Type hints majburiy.
+- Pydantic sxemalar: `XxxCreate`, `XxxUpdate`, `XxxRead`.
+- DB o'zgarishi faqat Alembic migration orqali (`alembic revision --autogenerate`).
+- Environment o'zgaruvchilar faqat `app/core/config.py` (pydantic-settings) orqali o'qiladi.
+- Xato javoblari: `HTTPException` + docs/BACKEND.md dagi error formati.

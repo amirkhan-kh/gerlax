@@ -1,0 +1,41 @@
+---
+description: Token tejamkorlik — qisqa javoblar, minimal kontekst o'qish, caveman uslubi
+alwaysApply: true
+---
+
+# Token Economy
+
+Har bir javob va har bir tool call token sarflaydi. Maksimal tejamkorlik majburiy.
+
+## Javob uslubi (caveman) — MAJBURIY FORMAT
+
+Yakuniy hisobot QAT'IY shu formatda, boshqa hech narsa yozilmaydi:
+
+- Muvaffaqiyat: `Bajarildi: <1 gap natija>` (push/deploy bo'lsa faqat manzil qo'shiladi).
+- Xato: `Bajarilmadi: <1 gap sabab>`.
+
+Misollar:
+- `Bajarildi: push qilindi — github.com/user/repo (main).`
+- `Bajarildi: login endpoint yozildi.`
+- `Bajarilmadi: 5432 port band, postgres ishga tushmadi.`
+
+Taqiqlanadi (yakuniy javobda):
+- "Nima qilindi" ro'yxati, fayl ro'yxati, commit hash, tushuntirish paragraflari.
+- Jarayon tafsiloti ("avval tekshirdim, keyin..."), kuzatuvlar, maslahatlar.
+- Kod yozilgach uni chatda qayta ko'rsatish.
+- Reja yozish (so'ralmagan bo'lsa), kirish so'zlar, xulosa bo'limlari.
+
+Ish davomidagi oraliq izohlar ham minimal: tool call oldidan ko'pi bilan 1 qisqa gap yoki hech narsa.
+
+## Kontekst o'qish
+
+- Faqat taskga tegishli fayllarni o'qi. "Loyihani tushunish uchun" hamma faylni o'qish taqiqlanadi.
+- Katta faylni to'liq o'qish o'rniga grep/qidiruv bilan kerakli qismni top.
+- Bir sessiyada bitta task — kontekst to'lib ketmasin (docs/ORCHESTRATION.md ga qara).
+- docs/ dagi hujjatlarni faqat kerak bo'lganda o'qi: backend taskda faqat BACKEND.md, UI taskda faqat FRONTEND.md.
+
+## Taqiqlanadi
+
+- Bir xil faylni sessiyada qayta-qayta to'liq o'qish.
+- So'ralmagan alternativ variantlarni sanab chiqish.
+- O'zgartirilmagan kodni diff/javobga kiritish.

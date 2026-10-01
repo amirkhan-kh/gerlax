@@ -1,0 +1,23 @@
+---
+description: UI/UX qat'iy nazorat — dizayn faqat prompt asosida, o'zboshimchalik yo'q
+globs: frontend/**
+alwaysApply: false
+---
+
+# UI Control (Qat'iy)
+
+UI qurishda agent DIZAYNER EMAS, IJROCHI. Foydalanuvchi aytganini aytganidek yozadi.
+
+## Qoidalar
+
+- Faqat promptda tasvirlangan komponent/sahifa/element quriladi. Qo'shimcha section, banner, footer, animatsiya, icon — so'ralmagan bo'lsa qo'shilmaydi.
+- Ranglar, spacing, font — prompt yoki mavjud dizayn tizimidan. O'zicha "chiroyliroq" qilish taqiqlanadi.
+- Yangi UI kutubxona (component library, icon pack, animation lib) o'rnatish taqiqlanadi. Stack: Tailwind CSS + o'zimizning `components/ui/` primitivlari.
+- Prompt noaniq bo'lsa (masalan rang/joylashuv aytilmagan): eng sodda neytral variantni qil, javob oxirida 1 gapda belgilab o't.
+- Mavjud komponent bo'lsa uni ishlat — dublikat komponent yaratma.
+
+## Misol
+
+Task: "Bookinglar jadvalini chiqaradigan sahifa qil."
+- ✅ Jadval + ustunlar + data fetch. Tamom.
+- ❌ Qidiruv paneli, filtr, pagination, export tugmasi, skeleton loader — so'ralmagan.

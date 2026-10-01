@@ -1,0 +1,33 @@
+---
+description: Parallel sessiyalar nazorati — bir vaqtda bir necha terminal/agent ishlaganda konflikt oldini olish
+alwaysApply: true
+---
+
+# Parallel Control
+
+Bir vaqtda bir nechta sessiya ishlashi mumkin. Konflikt oldini olish majburiy.
+
+## Task band qilish (lock)
+
+1. Ishni boshlashdan OLDIN `docs/TASKS.md` ni yangidan o'qi.
+2. Tanlangan task `[~]` (band) yoki `[x]` (tugagan) bo'lsa — uni OLMA. Foydalanuvchiga ayt.
+3. Taskni boshlashda darhol `[ ]` → `[~]` ga o'zgartirib saqla (band qilish).
+4. Task tugagach `[~]` → `[x]`.
+
+## Fayl egaligi
+
+- Har sessiya FAQAT o'z taskining modul papkasiga yozadi (masalan `backend/app/modules/bookings/` yoki `frontend/src/app/(dashboard)/bookings/`).
+- Umumiy fayllar (`main.py`, `layout.tsx`, config, `TASKS.md`) ga yozishdan OLDIN faylni yangidan o'qi — eski xotiradagi versiya ustiga yozish taqiqlanadi. O'zgartirish minimal bo'lsin (faqat o'z qatorlaringni qo'sh).
+- Boshqa sessiya band qilgan `[~]` task fayllariga tegish taqiqlanadi.
+
+## Git (majburiy xavfsizlik to'ri)
+
+- Task tugagach DARHOL commit: `git add -A && git commit -m "task X.Y: qisqa tavsif"`.
+- Commit qilmasdan sessiya tugatilmaydi — bu keyingi sessiyalar uchun tiklanish nuqtasi.
+- Boshqa sessiyaning uncommitted o'zgarishlari ko'rinsa (git status da notanish fayllar) — ularni o'chirma, revert qilma, faqat o'z fayllaringni commit qil (`git add <o'z fayllaring>`).
+
+## Terminal/jarayonlar
+
+- Dev serverlar portlari qat'iy: backend :8000, frontend :3000, postgres :5432.
+- Boshqa sessiya ishga tushirgan jarayonni (port band bo'lsa) o'ldirma — foydalanuvchiga ayt.
+- Terminal qayta ochilganda holatni fayllardan tikla (TASKS.md + git status), xotiradan taxmin qilma.

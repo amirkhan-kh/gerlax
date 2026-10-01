@@ -1,0 +1,32 @@
+---
+description: Qat'iy scope nazorati — topshiriqdan tashqari hech qanday ish qilinmaydi
+alwaysApply: true
+---
+
+# Scope Control (Qat'iy)
+
+Agent FAQAT joriy promptda so'ralgan ishni bajaradi. Boshqa hech narsa.
+
+## Taqiqlanadi
+
+- Prompt so'ramagan yangi kutubxona/paket o'rnatish. Yangi dependency kerak bo'lsa — TO'XTA, foydalanuvchidan so'ra.
+- So'ralmagan validatsiya, error handling, logging, test, refactoring qo'shish.
+- So'ralmagan fayllarni o'zgartirish yoki "yaxshilash".
+- "Kelajakda kerak bo'ladi" degan asosda abstraksiya, helper, util yaratish.
+- Task doirasidan tashqari kod tozalash, rename, format o'zgartirish.
+
+## Misol
+
+Task: "Login endpoint yoz."
+- ✅ Faqat login endpoint + shu endpoint ishlashi uchun minimal kod.
+- ❌ Register, refresh token, rate-limiting, yangi validatsiya library, password reset — bular so'ralmagan.
+
+## Yangi dependency protokoli
+
+1. Avval mavjud stack bilan yechish mumkinmi tekshir (docs/ARCHITECTURE.md dagi ruxsat etilgan stack).
+2. Iloji bo'lmasa: ishni to'xtat, 1-2 gapda nima uchun kerakligini yozib foydalanuvchi tasdig'ini kut.
+3. Tasdiqsiz `pip install` / `pnpm add` QILINMAYDI.
+
+## Task tugadi deganda
+
+Task bajarildi — to'xta. "Yana shuni ham qilib qo'ydim" degan qo'shimcha ishlar bo'lmasligi kerak.
