@@ -146,7 +146,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     if (!noImage && photo) formData.set("image", await compress(photo))
     const result = await createProduct(formData)
     setPending(false)
-    if (result && "error" in result) {
+    if (result && "error" in result && result.error) {
       setError(result.error)
       return
     }
