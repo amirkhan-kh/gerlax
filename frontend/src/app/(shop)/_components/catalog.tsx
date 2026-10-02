@@ -17,7 +17,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   const [payment, setPayment] = useState("cash")
   const [pending, setPending] = useState(false)
   const [noImage, setNoImage] = useState(false)
-  const [photo, setPhoto] = useState<File | null>(null)
+  const [photo, setPhoto] = useState("")
   const [preview, setPreview] = useState("")
   const [address, setAddress] = useState("")
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null)
@@ -27,7 +27,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   const [cameraOn, setCameraOn] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const desktopFile = useRef(false)
+  const captureRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!mapOpen || !pin) return
@@ -60,7 +60,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   function resetOrder() {
     stopCamera()
     setNoImage(false)
-    setPhoto(null)
+    setPhoto("")
     setPreview("")
     setAddress("")
     setPin(null)
@@ -81,40 +81,26 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     }
   }, [cameraOn])
 
-  function phoneCamera() {
-    const ua = navigator.userAgent
-    if (/Android|iPhone|iPad|iPod|Windows Phone|IEMobile|webOS/i.test(ua)) return true
-    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1
-  }
-
   async function openCamera() {
-    const attempts: MediaStreamConstraints[] = [
-      { audio: false, video: { facingMode: { ideal: "environment" } } },
-      { audio: false, video: { facingMode: "user" } },
-      { audio: false, video: true },
-    ]
-    for (const constraints of attempts) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        streamRef.current?.getTracks().forEach((track) => track.stop())
-        streamRef.current = stream
-        setCameraOn(true)
-        return
-      } catch {
-        continue
+    if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
+      const attempts: MediaStreamConstraints[] = [
+        { audio: false, video: { facingMode: { ideal: "environment" } } },
+        { audio: false, video: { facingMode: "user" } },
+        { audio: false, video: true },
+      ]
+      for (const constraints of attempts) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia(constraints)
+          streamRef.current?.getTracks().forEach((track) => track.stop())
+          streamRef.current = stream
+          setCameraOn(true)
+          return
+        } catch {
+          continue
+        }
       }
     }
-    desktopFile.current = true
-  }
-
-  function onCameraPick(event: React.MouseEvent<HTMLInputElement>) {
-    if (phoneCamera() || desktopFile.current) {
-      desktopFile.current = false
-      return
-    }
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return
-    event.preventDefault()
-    void openCamera()
+    captureRef.current?.click()
   }
 
   function snap() {
@@ -133,10 +119,16 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     }, "image/jpeg", 0.9)
   }
 
-  function takePhoto(file: File | undefined) {
-    if (!file || !file.type.startsWith("image/")) return
-    setPhoto(file)
-    setPreview(URL.createObjectURL(file))
+  async function takePhoto(file: File | undefined) {
+    if (!file) return
+    const dataUrl = await compress(file)
+    if (!dataUrl) {
+      setError("Rasm formati qo'llab-quvvatlanmaydi")
+      return
+    }
+    setError("")
+    setPhoto(dataUrl)
+    setPreview(dataUrl)
   }
 
   function locate() {
@@ -161,7 +153,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
       return
     }
     setPending(true)
-    if (!noImage && photo) formData.set("image", await compress(photo))
+    if (!noImage && photo) formData.set("image", photo)
     const result = await createProduct(formData)
     setPending(false)
     if (result && "error" in result && result.error) {
@@ -266,7 +258,20 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
             action={onAdd}
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 className="mb-4 text-xl font-semibold">Yangi buyurtma</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Yangi buyurtma</h2>
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none text-white/70 hover:text-white"
+                type="button"
+                aria-label="Yopish"
+                onClick={() => {
+                  stopCamera()
+                  setAdding(false)
+                }}
+              >
+                ×
+              </button>
+            </div>
             <label className="mb-3 block text-sm text-white/70">
               Tovar turi
               <select className="field mt-1" name="type_id" required defaultValue="">
@@ -307,7 +312,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
                   setNoImage(event.target.checked)
                   if (event.target.checked) {
                     stopCamera()
-                    setPhoto(null)
+                    setPhoto("")
                     setPreview("")
                   }
                 }}
@@ -327,17 +332,17 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
                       onChange={(event) => takePhoto(event.target.files?.[0])}
                     />
                   </label>
-                  <label className="btn-line relative text-center">
+                  <button className="btn-line" type="button" onClick={openCamera}>
                     Kameradan
-                    <input
-                      className="absolute inset-0 cursor-pointer opacity-0"
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onClick={onCameraPick}
-                      onChange={(event) => takePhoto(event.target.files?.[0])}
-                    />
-                  </label>
+                  </button>
+                  <input
+                    ref={captureRef}
+                    className="hidden"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(event) => takePhoto(event.target.files?.[0])}
+                  />
                 </div>
                 {cameraOn ? (
                   <div className="mt-2">
@@ -439,16 +444,38 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   )
 }
 
+async function decode(file: File): Promise<ImageBitmap | HTMLImageElement | null> {
+  try {
+    return await createImageBitmap(file)
+  } catch {
+    // fall through
+  }
+  const url = URL.createObjectURL(file)
+  try {
+    const img = new Image()
+    img.src = url
+    await img.decode()
+    return img
+  } catch {
+    return null
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 async function compress(file: File) {
-  const bitmap = await createImageBitmap(file)
+  const source = await decode(file)
+  if (!source) return ""
+  const width = "naturalWidth" in source ? source.naturalWidth : source.width
+  const height = "naturalHeight" in source ? source.naturalHeight : source.height
   const max = 1024
-  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height))
+  const scale = Math.min(1, max / Math.max(width, height, 1))
   const canvas = document.createElement("canvas")
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale))
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+  canvas.width = Math.max(1, Math.round(width * scale))
+  canvas.height = Math.max(1, Math.round(height * scale))
   const ctx = canvas.getContext("2d")
   if (!ctx) return ""
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-  bitmap.close()
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
+  if ("close" in source) source.close()
   return canvas.toDataURL("image/jpeg", 0.7)
 }

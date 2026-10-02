@@ -59,6 +59,7 @@ Qoida: 1 sessiya = 1 task. Tugagach `[x]` belgilanadi. Tartib buzilmaydi.
 ## Phase 8 — Gerlax do'kon
 
 - [x] 8.1 Aksesuar do'koni: login, tovar turlari, buyurtma, sotuv, admin xodimlar
+- [x] 8.2 Buyurtma modal: X yopish, kamera auto ochilish (barcha qurilma), rasm DB da data URL (har qanday format → JPEG), tovar kartada rasm
 
 
 
