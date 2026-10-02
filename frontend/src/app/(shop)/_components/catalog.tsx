@@ -31,7 +31,8 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     setDraft("")
     reverseAddress(pin.lat, pin.lng).then((result) => {
       if (!live) return
-      setDraft("address" in result ? result.address : `${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`)
+      const found = "address" in result ? result.address : ""
+      setDraft(found || `${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`)
     })
     return () => {
       live = false
