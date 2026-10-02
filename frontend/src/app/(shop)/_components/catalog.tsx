@@ -25,9 +25,9 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   const [geoOff, setGeoOff] = useState(false)
   const [draft, setDraft] = useState("")
   const [cameraOn, setCameraOn] = useState(false)
-  const cameraRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const desktopFile = useRef(false)
 
   useEffect(() => {
     if (!mapOpen || !pin) return
@@ -81,22 +81,40 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     }
   }, [cameraOn])
 
+  function phoneCamera() {
+    const ua = navigator.userAgent
+    if (/Android|iPhone|iPad|iPod|Windows Phone|IEMobile|webOS/i.test(ua)) return true
+    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1
+  }
+
   async function openCamera() {
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      cameraRef.current?.click()
+    const attempts: MediaStreamConstraints[] = [
+      { audio: false, video: { facingMode: { ideal: "environment" } } },
+      { audio: false, video: { facingMode: "user" } },
+      { audio: false, video: true },
+    ]
+    for (const constraints of attempts) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        streamRef.current?.getTracks().forEach((track) => track.stop())
+        streamRef.current = stream
+        setCameraOn(true)
+        return
+      } catch {
+        continue
+      }
+    }
+    desktopFile.current = true
+  }
+
+  function onCameraPick(event: React.MouseEvent<HTMLInputElement>) {
+    if (phoneCamera() || desktopFile.current) {
+      desktopFile.current = false
       return
     }
-    try {
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: { ideal: "environment" } },
-      })
-      streamRef.current = stream
-      setCameraOn(true)
-    } catch {
-      cameraRef.current?.click()
-    }
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return
+    event.preventDefault()
+    void openCamera()
   }
 
   function snap() {
@@ -309,18 +327,18 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
                       onChange={(event) => takePhoto(event.target.files?.[0])}
                     />
                   </label>
-                  <button className="btn-line" type="button" onClick={openCamera}>
+                  <label className="btn-line relative text-center">
                     Kameradan
-                  </button>
+                    <input
+                      className="absolute inset-0 cursor-pointer opacity-0"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onClick={onCameraPick}
+                      onChange={(event) => takePhoto(event.target.files?.[0])}
+                    />
+                  </label>
                 </div>
-                <input
-                  ref={cameraRef}
-                  className="sr-only"
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(event) => takePhoto(event.target.files?.[0])}
-                />
                 {cameraOn ? (
                   <div className="mt-2">
                     <video ref={videoRef} className="h-48 w-full rounded-xl object-cover" autoPlay muted playsInline />
