@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { createProduct, reverseAddress, sellProduct } from "@/actions/shop"
 import { money, when } from "@/lib/format"
@@ -24,6 +24,10 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   const [mapOpen, setMapOpen] = useState(false)
   const [geoOff, setGeoOff] = useState(false)
   const [draft, setDraft] = useState("")
+  const [cameraOn, setCameraOn] = useState(false)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
     if (!mapOpen || !pin) return
@@ -47,7 +51,14 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     })
   }, [products, typeId, model])
 
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    setCameraOn(false)
+  }
+
   function resetOrder() {
+    stopCamera()
     setNoImage(false)
     setPhoto(null)
     setPreview("")
@@ -57,6 +68,51 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     setGeoOff(false)
     setDraft("")
     setError("")
+  }
+
+  useEffect(() => {
+    const video = videoRef.current
+    const stream = streamRef.current
+    if (!cameraOn || !video || !stream) return
+    video.srcObject = stream
+    void video.play()
+    return () => {
+      video.srcObject = null
+    }
+  }, [cameraOn])
+
+  async function openCamera() {
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      cameraRef.current?.click()
+      return
+    }
+    try {
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: "environment" } },
+      })
+      streamRef.current = stream
+      setCameraOn(true)
+    } catch {
+      cameraRef.current?.click()
+    }
+  }
+
+  function snap() {
+    const video = videoRef.current
+    if (!video) return
+    const canvas = document.createElement("canvas")
+    canvas.width = video.videoWidth || 640
+    canvas.height = video.videoHeight || 480
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      takePhoto(new File([blob], "camera.jpg", { type: "image/jpeg" }))
+      stopCamera()
+    }, "image/jpeg", 0.9)
   }
 
   function takePhoto(file: File | undefined) {
@@ -186,7 +242,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
       </button>
 
       {adding ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => setAdding(false)}>
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => { stopCamera(); setAdding(false) }}>
           <form
             className="glass max-h-[90vh] w-full max-w-md overflow-auto p-5"
             action={onAdd}
@@ -232,6 +288,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
                 onChange={(event) => {
                   setNoImage(event.target.checked)
                   if (event.target.checked) {
+                    stopCamera()
                     setPhoto(null)
                     setPreview("")
                   }
@@ -252,17 +309,26 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
                       onChange={(event) => takePhoto(event.target.files?.[0])}
                     />
                   </label>
-                  <label className="btn-line relative text-center">
+                  <button className="btn-line" type="button" onClick={openCamera}>
                     Kameradan
-                    <input
-                      className="absolute inset-0 cursor-pointer opacity-0"
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={(event) => takePhoto(event.target.files?.[0])}
-                    />
-                  </label>
+                  </button>
                 </div>
+                <input
+                  ref={cameraRef}
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(event) => takePhoto(event.target.files?.[0])}
+                />
+                {cameraOn ? (
+                  <div className="mt-2">
+                    <video ref={videoRef} className="h-48 w-full rounded-xl object-cover" autoPlay muted playsInline />
+                    <button className="btn mt-2 w-full" type="button" onClick={snap}>
+                      Olish
+                    </button>
+                  </div>
+                ) : null}
                 {preview ? <img className="mt-2 h-32 w-full rounded-xl object-cover" src={preview} alt="" /> : null}
               </div>
             )}
