@@ -17,6 +17,7 @@ export type Product = {
   name: string
   address: string
   image: string | null
+  client_name: string | null
   color: string
   price: number
   delivery_at: string

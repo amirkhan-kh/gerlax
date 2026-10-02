@@ -8,8 +8,12 @@ import type { Product, ProductType } from "@/lib/types"
 
 import { PlaceMap } from "./place-map"
 
-export function Catalog({ products, types }: { products: Product[]; types: ProductType[] }) {
+const PAGE_SIZE = 6
+
+export function Catalog({ products, types, isAdmin }: { products: Product[]; types: ProductType[]; isAdmin: boolean }) {
   const [typeId, setTypeId] = useState("")
+  const [page, setPage] = useState(1)
+  const [stock, setStock] = useState(false)
   const [model, setModel] = useState("")
   const [adding, setAdding] = useState(false)
   const [selling, setSelling] = useState<Product | null>(null)
@@ -51,6 +55,10 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
     })
   }, [products, typeId, model])
 
+  const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const current = Math.min(page, pages)
+  const shown = visible.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
+
   function stopCamera() {
     streamRef.current?.getTracks().forEach((track) => track.stop())
     streamRef.current = null
@@ -60,6 +68,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
   function resetOrder() {
     stopCamera()
     setNoImage(false)
+    setStock(false)
     setPhoto("")
     setPreview("")
     setAddress("")
@@ -187,6 +196,7 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
           onChange={(event) => {
             setTypeId(event.target.value)
             setModel("")
+            setPage(1)
           }}
         >
           <option value="">Barchasi</option>
@@ -205,7 +215,10 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
             className="field mt-1"
             value={model}
             placeholder="Masalan Hoco yoki Mi"
-            onChange={(event) => setModel(event.target.value)}
+            onChange={(event) => {
+              setModel(event.target.value)
+              setPage(1)
+            }}
           />
         </label>
       ) : null}
@@ -214,14 +227,23 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
         <p className="mt-8 text-center text-white/55">Tovar topilmadi</p>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
-          {visible.map((item) => (
+          {shown.map((item) => (
             <article key={item.id} className="glass flex flex-col gap-1.5 p-3">
               <p className="text-[11px] uppercase tracking-wide text-white/45">{item.type_name}</p>
               <h2 className="text-base font-semibold leading-tight">{item.name}</h2>
               <p className="text-lg font-semibold text-[#c6f135]">{money(item.price)}</p>
               {item.image ? <img className="h-28 w-full rounded-xl object-cover" src={item.image} alt="" /> : null}
               <p className="text-sm text-white/75">{item.color}</p>
-              <p className="line-clamp-2 text-sm text-white/60">{item.address}</p>
+              <p className="text-sm text-white/75">{item.client_name ?? "Ombor"}</p>
+              <p className="truncate text-sm text-white/60">{item.address.split(",")[0].trim()}</p>
+              <a
+                className="btn-line text-center"
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Manzil
+              </a>
               <p className="text-xs text-white/45">{when(item.delivery_at)}</p>
               <button
                 className="btn-line mt-2"
@@ -238,6 +260,21 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
           ))}
         </div>
       )}
+
+      {pages > 1 ? (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
+            <button
+              key={number}
+              className={number === current ? "btn h-9 min-w-9 px-3" : "btn-line h-9 min-w-9 px-3"}
+              type="button"
+              onClick={() => setPage(number)}
+            >
+              {number}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <button
         className="fixed right-5 bottom-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-[#c6f135] text-3xl text-[#14120e] shadow-[0_10px_30px_rgba(198,241,53,0.35)]"
@@ -289,6 +326,16 @@ export function Catalog({ products, types }: { products: Product[]; types: Produ
               Tovar nomi
               <input className="field mt-1" name="name" required />
             </label>
+            <label className="mb-3 block text-sm text-white/70">
+              Klient ismi
+              <input className="field mt-1" name="client_name" required={!stock} disabled={stock} />
+            </label>
+            {isAdmin ? (
+              <label className="mb-3 flex items-center gap-2 text-sm text-white/70">
+                <input type="checkbox" name="stock" checked={stock} onChange={(event) => setStock(event.target.checked)} />
+                Ombor uchun
+              </label>
+            ) : null}
             <label className="mb-3 block text-sm text-white/70">
               Manzil
               <span className="mt-1 flex gap-2">

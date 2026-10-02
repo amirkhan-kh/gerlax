@@ -73,6 +73,9 @@ export async function createProduct(formData: FormData) {
   if (!String(formData.get("color") ?? "").trim()) return { error: "Rangni kiriting" }
   if (!formData.get("type_id")) return { error: "Tovar turini tanlang" }
   if (image && !image.startsWith("data:image/")) return { error: "Rasm yuklang" }
+  const stock = formData.get("stock") === "on"
+  const client = String(formData.get("client_name") ?? "").trim()
+  if (!stock && !client) return { error: "Klient ismini kiriting" }
   try {
     await api("/api/v1/products", {
       method: "POST",
@@ -81,6 +84,7 @@ export async function createProduct(formData: FormData) {
         name: String(formData.get("name") ?? "").trim(),
         address: String(formData.get("address") ?? "").trim(),
         image: image || null,
+        client_name: stock ? null : client,
         color: String(formData.get("color") ?? "").trim(),
         price,
         delivery_at: delivery.length === 16 ? `${delivery}:00+05:00` : delivery,

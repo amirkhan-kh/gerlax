@@ -21,6 +21,7 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(160))
     address: Mapped[str] = mapped_column(String(300))
     image: Mapped[str | None] = mapped_column(Text)
+    client_name: Mapped[str | None] = mapped_column(String(120))
     color: Mapped[str] = mapped_column(String(80))
     price: Mapped[int] = mapped_column(Integer)
     delivery_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

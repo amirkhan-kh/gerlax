@@ -19,6 +19,7 @@ class ProductOut(BaseModel):
     name: str
     address: str
     image: str | None = None
+    client_name: str | None = None
     color: str
     price: int
     delivery_at: datetime
@@ -31,6 +32,7 @@ class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     address: str = Field(min_length=1, max_length=300)
     image: str | None = None
+    client_name: str | None = Field(default=None, max_length=120)
     color: str = Field(min_length=1, max_length=80)
     price: int = Field(gt=0)
     delivery_at: datetime

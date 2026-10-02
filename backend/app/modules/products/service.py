@@ -33,6 +33,7 @@ def to_product(product: Product) -> ProductOut:
         name=product.name,
         address=product.address,
         image=product.image,
+        client_name=product.client_name,
         color=product.color,
         price=product.price,
         delivery_at=product.delivery_at,
@@ -80,11 +81,15 @@ class ProductService:
         kind = await repo.get_type(db, data.type_id)
         if kind is None:
             raise HTTPException(status_code=400, detail="Tovar turi topilmadi")
+        client = (data.client_name or "").strip() or None
+        if client is None and user.role != "admin":
+            raise HTTPException(status_code=400, detail="Klient ismini kiriting")
         product = Product(
             type_id=kind.id,
             name=data.name.strip(),
             address=data.address.strip(),
             image=save_image(data.image) if data.image else None,
+            client_name=client,
             color=data.color.strip(),
             price=data.price,
             delivery_at=data.delivery_at,
