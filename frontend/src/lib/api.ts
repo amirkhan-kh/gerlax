@@ -2,7 +2,9 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 export function backendUrl(path: string): string {
-  const base = process.env.BACKEND_URL ?? process.env.API_URL ?? "http://127.0.0.1:8002"
+  const base = process.env.VERCEL
+    ? "http://189.74.99.174"
+    : (process.env.BACKEND_URL ?? process.env.API_URL ?? "http://127.0.0.1:8002")
   return new URL(path.replace(/^\//, ""), base.endsWith("/") ? base : `${base}/`).href
 }
 
