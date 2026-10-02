@@ -5,6 +5,7 @@ import { api, rethrow } from "@/lib/api"
 import { roleLabel, type User } from "@/lib/types"
 
 import { LiveRefresh } from "./_components/live-refresh"
+import { ThemeToggle } from "./_components/theme-toggle"
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
   let me: User
@@ -42,6 +43,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
                 Boshqaruv
               </Link>
             ) : null}
+            <ThemeToggle />
             <form action={logout}>
               <button className="rounded-full border border-white/15 px-3 py-1" type="submit">
                 Chiqish

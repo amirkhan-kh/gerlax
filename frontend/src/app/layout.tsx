@@ -9,8 +9,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uz" className="h-full">
-      <body className="min-h-full antialiased">{children}</body>
+    <html lang="uz" className="dark h-full" suppressHydrationWarning>
+      <body className="min-h-full antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem("gerlax-theme")==="light"){document.documentElement.classList.remove("dark");document.documentElement.classList.add("light")}}catch(e){}})()`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   )
 }
