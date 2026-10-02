@@ -67,8 +67,14 @@ export async function logout() {
 export async function createProduct(formData: FormData) {
   const delivery = String(formData.get("delivery_at") ?? "")
   const price = Number(formData.get("price"))
+  const image = String(formData.get("image") ?? "")
   if (!delivery) return { error: "Yetkazish vaqtini kiriting" }
   if (!Number.isFinite(price) || price <= 0) return { error: "Narxni kiriting" }
+  if (!String(formData.get("name") ?? "").trim()) return { error: "Tovar nomini kiriting" }
+  if (!String(formData.get("address") ?? "").trim()) return { error: "Manzilni kiriting" }
+  if (!String(formData.get("color") ?? "").trim()) return { error: "Rangni kiriting" }
+  if (!formData.get("type_id")) return { error: "Tovar turini tanlang" }
+  if (image && !image.startsWith("data:image/")) return { error: "Rasm yuklang" }
   try {
     await api("/api/v1/products", {
       method: "POST",
@@ -76,6 +82,7 @@ export async function createProduct(formData: FormData) {
         type_id: Number(formData.get("type_id")),
         name: String(formData.get("name") ?? "").trim(),
         address: String(formData.get("address") ?? "").trim(),
+        image: image || null,
         color: String(formData.get("color") ?? "").trim(),
         price,
         delivery_at: delivery.length === 16 ? `${delivery}:00+05:00` : delivery,
@@ -86,6 +93,20 @@ export async function createProduct(formData: FormData) {
   }
   touch()
   return { ok: true as const }
+}
+
+export async function reverseAddress(lat: number, lng: number) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=uz`
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "Gerlax/1.0" }, cache: "no-store" })
+    if (!res.ok) return { error: "Manzil topilmadi" }
+    const data = (await res.json()) as { display_name?: string }
+    const address = data.display_name?.trim().slice(0, 300)
+    if (!address) return { error: "Manzil topilmadi" }
+    return { address }
+  } catch {
+    return { error: "Manzil topilmadi" }
+  }
 }
 
 export async function sellProduct(formData: FormData) {

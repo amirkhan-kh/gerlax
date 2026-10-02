@@ -1,3 +1,7 @@
+import base64
+import uuid
+from pathlib import Path
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,6 +12,28 @@ from app.modules.users.models import User
 
 repo = ProductRepository()
 PAYMENTS = ("full", "partial", "cash")
+UPLOADS = Path(__file__).resolve().parents[3] / "uploads"
+
+
+def save_image(data_url: str) -> str:
+    if not data_url.startswith("data:image/") or ";base64," not in data_url:
+        raise HTTPException(status_code=400, detail="Rasm noto'g'ri")
+    header, b64 = data_url.split(";base64,", 1)
+    try:
+        raw = base64.b64decode(b64, validate=True)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Rasm noto'g'ri") from None
+    if not raw or len(raw) > 2_500_000:
+        raise HTTPException(status_code=400, detail="Rasm juda katta")
+    ext = "jpg"
+    if "png" in header:
+        ext = "png"
+    elif "webp" in header:
+        ext = "webp"
+    UPLOADS.mkdir(exist_ok=True)
+    name = f"{uuid.uuid4().hex}.{ext}"
+    (UPLOADS / name).write_bytes(raw)
+    return f"/uploads/{name}"
 
 
 def to_product(product: Product) -> ProductOut:
@@ -17,6 +43,7 @@ def to_product(product: Product) -> ProductOut:
         type_name=product.type.name,
         name=product.name,
         address=product.address,
+        image=product.image,
         color=product.color,
         price=product.price,
         delivery_at=product.delivery_at,
@@ -68,6 +95,7 @@ class ProductService:
             type_id=kind.id,
             name=data.name.strip(),
             address=data.address.strip(),
+            image=save_image(data.image) if data.image else None,
             color=data.color.strip(),
             price=data.price,
             delivery_at=data.delivery_at,

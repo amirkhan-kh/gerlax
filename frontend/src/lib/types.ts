@@ -16,6 +16,7 @@ export type Product = {
   type_name: string
   name: string
   address: string
+  image: string | null
   color: string
   price: number
   delivery_at: string

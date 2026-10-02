@@ -20,6 +20,7 @@ class Product(Base):
     type_id: Mapped[int] = mapped_column(ForeignKey("product_types.id"))
     name: Mapped[str] = mapped_column(String(160))
     address: Mapped[str] = mapped_column(String(300))
+    image: Mapped[str | None] = mapped_column(String(200))
     color: Mapped[str] = mapped_column(String(80))
     price: Mapped[int] = mapped_column(Integer)
     delivery_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
