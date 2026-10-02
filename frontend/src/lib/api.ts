@@ -1,7 +1,10 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-const API = process.env.API_URL ?? "http://127.0.0.1:8002"
+export function backendUrl(path: string): string {
+  const base = process.env.BACKEND_URL ?? process.env.API_URL ?? "http://127.0.0.1:8002"
+  return new URL(path.replace(/^\//, ""), base.endsWith("/") ? base : `${base}/`).href
+}
 
 export function rethrow(error: unknown): void {
   if (
@@ -31,7 +34,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers)
   if (init?.body) headers.set("Content-Type", "application/json")
   if (token) headers.set("Authorization", `Bearer ${token}`)
-  const res = await fetch(`${API}${path}`, { ...init, headers, cache: "no-store" })
+  const res = await fetch(backendUrl(path), { ...init, headers, cache: "no-store" })
   if (res.status === 401) redirect("/login")
   if (!res.ok) throw new Error(await errorText(res))
   if (res.status === 204) return undefined as T

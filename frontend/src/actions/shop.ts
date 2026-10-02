@@ -4,9 +4,7 @@ import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { api, rethrow } from "@/lib/api"
-
-const API = process.env.API_URL ?? "http://127.0.0.1:8002"
+import { api, backendUrl, rethrow } from "@/lib/api"
 
 function asError(error: unknown) {
   rethrow(error)
@@ -31,7 +29,7 @@ async function fail(res: Response): Promise<string> {
 }
 
 export async function login(_prev: { error: string } | null, formData: FormData) {
-  const res = await fetch(`${API}/api/v1/auth/login`, {
+  const res = await fetch(backendUrl("/api/v1/auth/login"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
