@@ -228,34 +228,81 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
           {shown.map((item) => (
-            <article key={item.id} className="glass flex flex-col gap-1.5 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-white/45">{item.type_name}</p>
-              <h2 className="text-base font-semibold leading-tight">{item.name}</h2>
-              <p className="text-lg font-semibold text-[#c6f135]">{money(item.price)}</p>
-              {item.image ? <img className="h-28 w-full rounded-xl object-cover" src={item.image} alt="" /> : null}
-              <p className="text-sm text-white/75">{item.color}</p>
-              <p className="text-sm text-white/75">{item.client_name ?? "Ombor"}</p>
-              <p className="truncate text-sm text-white/60">{item.address.split(",")[0].trim()}</p>
-              <a
-                className="btn-line text-center"
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Manzil
-              </a>
-              <p className="text-xs text-white/45">{when(item.delivery_at)}</p>
-              <button
-                className="btn-line mt-2"
-                type="button"
-                onClick={() => {
-                  setSelling(item)
-                  setError("")
-                  setPayment("cash")
-                }}
-              >
-                Sotildi
-              </button>
+            <article key={item.id} className="glass flex flex-col gap-2 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-[11px] uppercase tracking-wide text-white/45">{item.type_name}</p>
+                {item.client_name ? (
+                  <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
+                    Buyurtma
+                  </span>
+                ) : (
+                  <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
+                    Sotuv uchun
+                  </span>
+                )}
+              </div>
+              {item.image ? (
+                <div className="aspect-square w-full overflow-hidden rounded-xl bg-black/25">
+                  <img className="h-full w-full object-contain" src={item.image} alt="" />
+                </div>
+              ) : null}
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="min-w-0 break-words text-base font-semibold leading-tight">{item.name}</h2>
+                <span className="flex shrink-0 items-center gap-1 pt-0.5 text-[11px] text-white/55">
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                  </svg>
+                  {when(item.delivery_at)}
+                </span>
+              </div>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-sm">
+                <dt className="text-white/45">Narxi:</dt>
+                <dd className="text-right font-semibold text-[#c6f135]">{money(item.price)}</dd>
+                <dt className="text-white/45">Rangi:</dt>
+                <dd className="truncate text-right text-white/85">{item.color}</dd>
+                {item.client_name ? (
+                  <>
+                    <dt className="text-white/45">Buyurtmachi:</dt>
+                    <dd className="truncate text-right text-white/85">{item.client_name}</dd>
+                  </>
+                ) : null}
+              </dl>
+              <p className="flex items-start gap-1.5 text-sm text-white/70">
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-white/45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+                  <circle cx="12" cy="9.5" r="2.5" />
+                </svg>
+                <span className="line-clamp-2">{item.address}</span>
+              </p>
+              <div className="mt-auto flex flex-col gap-2 pt-1">
+                <a
+                  className="flex items-center justify-center gap-1.5 rounded-full border border-white/15 py-2 text-sm font-semibold text-white/85"
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+                    <path d="M9 4v14M15 6v14" />
+                  </svg>
+                  Manzil
+                </a>
+                <button
+                  className="btn flex items-center justify-center gap-1.5 py-2 text-sm"
+                  type="button"
+                  onClick={() => {
+                    setSelling(item)
+                    setError("")
+                    setPayment("cash")
+                  }}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 12l5 5L20 7" />
+                  </svg>
+                  Sotildi
+                </button>
+              </div>
             </article>
           ))}
         </div>

@@ -2,12 +2,20 @@ export function money(value: number) {
   return `${new Intl.NumberFormat("uz-UZ").format(value)} so'm`
 }
 
+const MONTHS = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"]
+
 export function when(iso: string) {
-  return new Intl.DateTimeFormat("uz-UZ", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Tashkent",
-  }).format(new Date(iso))
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      timeZone: "Asia/Tashkent",
+    })
+      .formatToParts(new Date(iso))
+      .map((part) => [part.type, part.value]),
+  )
+  return `${parts.day}-${MONTHS[Number(parts.month) - 1]}, ${parts.hour}:${parts.minute}`
 }
