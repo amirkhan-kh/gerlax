@@ -52,6 +52,7 @@ export default async function ArchivePage() {
               </div>
               <h2 className="truncate font-semibold">{item.name}</h2>
               <p className="text-sm font-semibold text-[#c6f135]">{money(item.price)}</p>
+              <p className="truncate text-xs text-white/55">Kiritgan: {item.created_by_name}</p>
               {item.client_name ? <p className="truncate text-xs text-white/55">Buyurtmachi: {item.client_name}</p> : null}
               {item.status === "sold" ? (
                 <>

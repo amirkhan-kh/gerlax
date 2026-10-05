@@ -320,9 +320,8 @@ export function Catalog({ products, types, me }: { products: Product[]; types: P
               <dl className="grid grid-cols-2 gap-x-2 gap-y-2.5 border-t border-white/10 pt-3">
                 <Info icon="palette" label="Rang" value={item.color} />
                 <Info icon="user" label="Buyurtmachi" value={item.client_name ?? "Ombor"} />
-                <div className="col-span-2">
-                  <Info icon="pin" label="Manzil" value={shortAddress(item.address)} title={item.address} />
-                </div>
+                <Info icon="pen" label="Kiritgan" value={item.created_by_name} />
+                <Info icon="pin" label="Manzil" value={shortAddress(item.address)} title={item.address} />
               </dl>
               <div className="mt-auto grid gap-2 sm:grid-cols-2">
                 <a
