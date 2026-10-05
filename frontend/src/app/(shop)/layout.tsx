@@ -38,6 +38,9 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
             <Link className="rounded-full px-3 py-1 text-white/80" href="/sales">
               Sotuvlar
             </Link>
+            <Link className="rounded-full px-3 py-1 text-white/80" href="/archive">
+              Arxiv
+            </Link>
             {me.role === "admin" ? (
               <Link className="rounded-full px-3 py-1 text-white/80" href="/admin">
                 Boshqaruv

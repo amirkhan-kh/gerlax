@@ -15,6 +15,7 @@ function touch() {
   revalidatePath("/")
   revalidatePath("/sales")
   revalidatePath("/admin")
+  revalidatePath("/archive")
 }
 
 async function fail(res: Response): Promise<string> {
@@ -123,6 +124,38 @@ export async function sellProduct(formData: FormData) {
     await api(`/api/v1/products/${Number(formData.get("product_id"))}/sell`, {
       method: "POST",
       body: JSON.stringify(body),
+    })
+  } catch (error) {
+    return asError(error)
+  }
+  touch()
+  return { ok: true as const }
+}
+
+export async function cancelProduct(formData: FormData) {
+  const reason = String(formData.get("reason") ?? "").trim()
+  const refund = Number(formData.get("refund_amount") || 0)
+  if (!reason) return { error: "Sababini yozing" }
+  if (!Number.isFinite(refund) || refund < 0) return { error: "Qaytarilgan summani to'g'ri kiriting" }
+  try {
+    await api(`/api/v1/products/${Number(formData.get("product_id"))}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({ action: String(formData.get("action") ?? ""), reason, refund_amount: refund }),
+    })
+  } catch (error) {
+    return asError(error)
+  }
+  touch()
+  return { ok: true as const }
+}
+
+export async function returnSale(formData: FormData) {
+  const reason = String(formData.get("reason") ?? "").trim()
+  if (!reason) return { error: "Sababini yozing" }
+  try {
+    await api(`/api/v1/sales/${Number(formData.get("sale_id"))}/return`, {
+      method: "POST",
+      body: JSON.stringify({ reason, condition: String(formData.get("condition") ?? "") }),
     })
   } catch (error) {
     return asError(error)

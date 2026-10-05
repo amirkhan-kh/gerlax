@@ -31,7 +31,23 @@ export type Product = {
   price: number
   delivery_at: string
   created_by_name: string
+  created_by_id: number | null
   created_at: string
+}
+
+export type ArchivedProduct = Product & {
+  archive_kind: "cancelled" | "defect" | null
+  archive_reason: string | null
+  archived_by_name: string | null
+  archived_at: string | null
+  refund_amount: number
+}
+
+export type SalesSummary = {
+  month_returns: number
+  month_refund: number
+  month_cancellations: number
+  month_archived: number
 }
 
 export type Sale = {
@@ -46,7 +62,14 @@ export type Sale = {
   paid_amount: number
   debt_amount: number
   sold_by_name: string
+  sold_by_id: number | null
   sold_at: string
+  status: "sold" | "returned"
+  returned_at: string | null
+  returned_by_name: string | null
+  return_reason: string | null
+  return_condition: "ok" | "defect" | null
+  refund_amount: number
 }
 
 export const ROLES: { id: Role; label: string }[] = [

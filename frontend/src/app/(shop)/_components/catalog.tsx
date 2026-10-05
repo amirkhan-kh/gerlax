@@ -2,16 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { createProduct, reverseAddress, sellProduct } from "@/actions/shop"
+import { cancelProduct, createProduct, reverseAddress, sellProduct } from "@/actions/shop"
+import { Choice } from "@/components/choice"
+import { Icon, type IconName } from "@/components/icon"
 import { money, when } from "@/lib/format"
 import { compress } from "@/lib/image"
-import type { Product, ProductType } from "@/lib/types"
+import type { Product, ProductType, User } from "@/lib/types"
 
 import { PlaceMap } from "./place-map"
 
 const PAGE_SIZE = 6
 
-export function Catalog({ products, types, isAdmin }: { products: Product[]; types: ProductType[]; isAdmin: boolean }) {
+export function Catalog({ products, types, me }: { products: Product[]; types: ProductType[]; me: User }) {
+  const isAdmin = me.role === "admin"
+  const [owner, setOwner] = useState("")
+  const [cancelling, setCancelling] = useState<Product | null>(null)
+  const [cancelAction, setCancelAction] = useState("stock")
   const [typeId, setTypeId] = useState("")
   const [page, setPage] = useState(1)
   const [stock, setStock] = useState(false)
@@ -50,11 +56,21 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
 
   const visible = useMemo(() => {
     return products.filter((item) => {
+      if (owner === "me" && item.created_by_id !== me.id) return false
+      if (owner && owner !== "me" && String(item.created_by_id) !== owner) return false
       if (typeId && String(item.type_id) !== typeId) return false
       if (typeId && model && !item.name.toLowerCase().includes(model.trim().toLowerCase())) return false
       return true
     })
-  }, [products, typeId, model])
+  }, [products, typeId, model, owner, me.id])
+
+  const owners = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const item of products) {
+      if (item.created_by_id !== null && item.created_by_id !== me.id) map.set(item.created_by_id, item.created_by_name)
+    }
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+  }, [products, me.id])
 
   const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
   const current = Math.min(page, pages)
@@ -187,27 +203,60 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
     setPayment("cash")
   }
 
+  async function onCancel(formData: FormData) {
+    setPending(true)
+    const result = await cancelProduct(formData)
+    setPending(false)
+    if ("error" in result) {
+      setError(result.error)
+      return
+    }
+    setCancelling(null)
+    setError("")
+  }
+
   return (
     <div>
-      <label className="block text-sm text-white/70">
-        Tovar turi
-        <select
-          className="field mt-1"
-          value={typeId}
-          onChange={(event) => {
-            setTypeId(event.target.value)
-            setModel("")
-            setPage(1)
-          }}
-        >
-          <option value="">Barchasi</option>
-          {types.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block text-sm text-white/70">
+          Tovar turi
+          <select
+            className="field mt-1"
+            value={typeId}
+            onChange={(event) => {
+              setTypeId(event.target.value)
+              setModel("")
+              setPage(1)
+            }}
+          >
+            <option value="">Barchasi</option>
+            {types.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm text-white/70">
+          Xodim
+          <select
+            className="field mt-1"
+            value={owner}
+            onChange={(event) => {
+              setOwner(event.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="">Barcha xodimlar</option>
+            <option value="me">Mening tovarlarim</option>
+            {owners.map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {typeId ? (
         <label className="mt-3 block text-sm text-white/70">
@@ -297,6 +346,20 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
                   <Icon name="check" className="h-4 w-4" />
                   Sotildi
                 </button>
+                {isAdmin || item.created_by_id === me.id ? (
+                  <button
+                    className="flex items-center justify-center gap-1.5 py-1 text-xs font-semibold text-red-400 hover:text-red-300 sm:col-span-2"
+                    type="button"
+                    onClick={() => {
+                      setCancelling(item)
+                      setCancelAction(item.client_name ? "stock" : "archive")
+                      setError("")
+                    }}
+                  >
+                    <Icon name="ban" className="h-3.5 w-3.5" />
+                    Bekor qilish
+                  </button>
+                ) : null}
               </div>
             </article>
           ))}
@@ -497,6 +560,64 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
         </div>
       ) : null}
 
+      {cancelling ? (
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => setCancelling(null)}>
+          <form
+            className="glass max-h-[90vh] w-full max-w-md overflow-auto p-5"
+            action={onCancel}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Bekor qilish</h2>
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none text-white/70 hover:text-white"
+                type="button"
+                aria-label="Yopish"
+                onClick={() => setCancelling(null)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="mt-1 text-white/70">
+              {cancelling.name} · <span className="text-[#c6f135]">{money(cancelling.price)}</span>
+            </p>
+            {cancelling.client_name ? (
+              <p className="text-sm text-white/55">Buyurtmachi: {cancelling.client_name}</p>
+            ) : null}
+            <input type="hidden" name="product_id" value={cancelling.id} />
+            <input type="hidden" name="action" value={cancelAction} />
+            <div className="mt-4 grid gap-2">
+              {cancelling.client_name ? (
+                <Choice
+                  active={cancelAction === "stock"}
+                  title="Omborga o'tkazish"
+                  text="Buyurtmachi olib tashlanadi, tovar “Sotuv uchun” bo'lib qoladi."
+                  onClick={() => setCancelAction("stock")}
+                />
+              ) : null}
+              <Choice
+                active={cancelAction === "archive"}
+                title="To'liq bekor qilish"
+                text="Tovar ro'yxatdan olinadi va Arxivga tushadi."
+                onClick={() => setCancelAction("archive")}
+              />
+            </div>
+            <label className="mt-4 block text-sm text-white/70">
+              Sabab
+              <textarea className="field mt-1 min-h-20 resize-none" name="reason" maxLength={300} required placeholder="Masalan: mijoz qo'ng'iroq qilib voz kechdi" />
+            </label>
+            <label className="mt-3 block text-sm text-white/70">
+              Qaytarilgan zaklad, so&apos;m (bo&apos;lsa)
+              <input className="field mt-1" name="refund_amount" type="number" min={0} max={cancelling.price} placeholder="0" />
+            </label>
+            {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
+            <button className="btn mt-4 w-full" type="submit" disabled={pending}>
+              Tasdiqlash
+            </button>
+          </form>
+        </div>
+      ) : null}
+
       {selling ? (
         <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => setSelling(null)}>
           <form
@@ -558,67 +679,5 @@ function Info({ icon, label, value, title }: { icon: IconName; label: string; va
         {value}
       </dd>
     </div>
-  )
-}
-
-type IconName = "clock" | "palette" | "user" | "pin" | "map" | "check" | "image"
-
-const ICONS: Record<IconName, React.ReactNode> = {
-  clock: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </>
-  ),
-  palette: (
-    <>
-      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.9 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.3-4-7.7-9-7.7z" />
-      <circle cx="7.5" cy="11" r="1" />
-      <circle cx="10.5" cy="7" r="1" />
-      <circle cx="15" cy="7.5" r="1" />
-    </>
-  ),
-  user: (
-    <>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21a8 8 0 0 1 16 0" />
-    </>
-  ),
-  pin: (
-    <>
-      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
-      <circle cx="12" cy="9.5" r="2.5" />
-    </>
-  ),
-  map: (
-    <>
-      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
-      <path d="M9 4v14M15 6v14" />
-    </>
-  ),
-  check: <path d="M5 12l5 5L20 7" />,
-  image: (
-    <>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <circle cx="9" cy="10" r="2" />
-      <path d="m21 16-5-5-9 9" />
-    </>
-  ),
-}
-
-function Icon({ name, className }: { name: IconName; className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {ICONS[name]}
-    </svg>
   )
 }

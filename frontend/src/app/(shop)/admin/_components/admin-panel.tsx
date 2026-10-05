@@ -5,7 +5,16 @@ import { useEffect, useState } from "react"
 import { createType, createUser, deleteUser, updateUser } from "@/actions/shop"
 import { ProfileForm } from "@/components/profile-form"
 import { duration, money, when } from "@/lib/format"
-import { ROLES, roleLabel, type Product, type ProductType, type Sale, type User, type UserStat } from "@/lib/types"
+import {
+  ROLES,
+  roleLabel,
+  type Product,
+  type ProductType,
+  type Sale,
+  type SalesSummary,
+  type User,
+  type UserStat,
+} from "@/lib/types"
 
 const TABS = [
   { id: "overview", label: "Umumiy" },
@@ -27,6 +36,7 @@ export function AdminPanel({
   types,
   products,
   sales,
+  summary,
 }: {
   me: User
   users: User[]
@@ -34,6 +44,7 @@ export function AdminPanel({
   types: ProductType[]
   products: Product[]
   sales: Sale[]
+  summary: SalesSummary
 }) {
   const [tab, setTab] = useState<Tab>("overview")
   const [error, setError] = useState("")
@@ -97,10 +108,16 @@ export function AdminPanel({
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <Stat label="Xodimlar" value={String(users.length)} hint={`${onlineCount} ta onlayn`} />
           <Stat label="Tovarlar" value={String(products.length)} hint="Sotuvda va buyurtmada" />
-          <Stat label="Sotuvlar" value={String(sales.length)} hint="Jami" />
-          <Stat label="Bu oy sotuv" value={String(monthSales)} hint="Xodimlar bo'yicha" />
-          <Stat label="Bu oy tushum" value={money(monthRevenue)} />
+          <Stat label="Sotuvlar" value={String(sales.filter((sale) => sale.status === "sold").length)} hint="Qaytarilganlarsiz" />
+          <Stat label="Bu oy sotuv" value={String(monthSales)} hint="Qaytarilganlarsiz" />
+          <Stat label="Bu oy tushum" value={money(monthRevenue)} hint="Sof, qaytarishlarsiz" />
           <Stat label="Nasiya" value={money(debt)} hint="Qolgan qarz" />
+          <Stat label="Bu oy qaytarilgan" value={String(summary.month_returns)} hint={`${money(summary.month_refund)} qaytarildi`} />
+          <Stat
+            label="Bu oy bekor qilingan"
+            value={String(summary.month_cancellations)}
+            hint={`${summary.month_archived} tasi arxivda`}
+          />
         </div>
       ) : null}
 

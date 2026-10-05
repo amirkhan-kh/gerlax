@@ -12,7 +12,7 @@ export default async function HomePage() {
       api<ProductType[]>("/api/v1/products/types"),
       api<User>("/api/v1/auth/me"),
     ])
-    return <Catalog products={products} types={types} isAdmin={me.role === "admin"} />
+    return <Catalog products={products} types={types} me={me} />
   } catch (error) {
     rethrow(error)
     return <p>Ma&apos;lumot yuklanmadi.</p>

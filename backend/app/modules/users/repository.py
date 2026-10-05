@@ -26,7 +26,7 @@ class UserRepository:
     async def sales_since(self, db: AsyncSession, since: datetime) -> dict[int, tuple[int, int]]:
         result = await db.execute(
             select(Sale.sold_by_id, func.count(Sale.id), func.coalesce(func.sum(Sale.price), 0))
-            .where(Sale.sold_by_id.is_not(None), Sale.sold_at >= since)
+            .where(Sale.sold_by_id.is_not(None), Sale.sold_at >= since, Sale.status != "returned")
             .group_by(Sale.sold_by_id)
         )
         return {row[0]: (row[1], row[2]) for row in result.all()}
