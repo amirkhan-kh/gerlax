@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import { returnSale } from "@/actions/shop"
 import { Choice } from "@/components/choice"
 import { Icon } from "@/components/icon"
+import { Pagination } from "@/components/pagination"
 import { money, when } from "@/lib/format"
 import type { Sale, User } from "@/lib/types"
 
@@ -14,7 +15,10 @@ const PAYMENT: Record<string, string> = {
   cash: "Naqd",
 }
 
+const PAGE_SIZE = 6
+
 export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
+  const [page, setPage] = useState(1)
   const [seller, setSeller] = useState("")
   const [status, setStatus] = useState("")
   const [returning, setReturning] = useState<Sale | null>(null)
@@ -36,6 +40,9 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
     if (status && sale.status !== status) return false
     return true
   })
+  const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const current = Math.min(page, pages)
+  const shown = visible.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
 
   async function onReturn(formData: FormData) {
     setPending(true)
@@ -54,7 +61,14 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm text-white/70">
           Xodim
-          <select className="field mt-1" value={seller} onChange={(event) => setSeller(event.target.value)}>
+          <select
+            className="field mt-1"
+            value={seller}
+            onChange={(event) => {
+              setSeller(event.target.value)
+              setPage(1)
+            }}
+          >
             <option value="">Barcha xodimlar</option>
             <option value="me">Mening sotuvlarim</option>
             {sellers.map(([id, name]) => (
@@ -66,7 +80,14 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
         </label>
         <label className="block text-sm text-white/70">
           Holat
-          <select className="field mt-1" value={status} onChange={(event) => setStatus(event.target.value)}>
+          <select
+            className="field mt-1"
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value)
+              setPage(1)
+            }}
+          >
             <option value="">Barchasi</option>
             <option value="sold">Sotilgan</option>
             <option value="returned">Qaytarilgan</option>
@@ -77,7 +98,7 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
       {visible.length === 0 ? <p className="mt-8 text-center text-white/55">Sotuv topilmadi</p> : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((sale) => (
+        {shown.map((sale) => (
           <article key={sale.id} className="card flex flex-col gap-3 p-3 sm:p-4">
             <div className="flex items-center justify-between gap-2">
               <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">{sale.type_name}</p>
@@ -132,6 +153,8 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
           </article>
         ))}
       </div>
+
+      <Pagination pages={pages} current={current} onChange={setPage} />
 
       {returning ? (
         <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => setReturning(null)}>
