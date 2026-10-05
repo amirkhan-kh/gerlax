@@ -127,6 +127,7 @@ class ProductService:
             paid_amount=paid,
             debt_amount=debt,
             sold_by_name=user.name,
+            sold_by_id=user.id,
         )
         repo.add_sale(db, sale)
         await repo.delete_product(db, product)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base import Base
@@ -17,4 +17,8 @@ class User(Base):
     login: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(32))
+    avatar: Mapped[str | None] = mapped_column(Text)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    active_month: Mapped[str | None] = mapped_column(String(7))
+    active_seconds: Mapped[int] = mapped_column(Integer, server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

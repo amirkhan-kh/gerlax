@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 import { createProduct, reverseAddress, sellProduct } from "@/actions/shop"
 import { money, when } from "@/lib/format"
+import { compress } from "@/lib/image"
 import type { Product, ProductType } from "@/lib/types"
 
 import { PlaceMap } from "./place-map"
@@ -228,64 +229,60 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
           {shown.map((item) => (
-            <article key={item.id} className="glass flex flex-col gap-2 p-3">
+            <article key={item.id} className="card flex flex-col gap-3 p-2.5 sm:p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-[11px] uppercase tracking-wide text-white/45">{item.type_name}</p>
+                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45 sm:text-[11px]">
+                  {item.type_name}
+                </p>
                 {item.client_name ? (
-                  <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
                     Buyurtma
                   </span>
                 ) : (
-                  <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
                     Sotuv uchun
                   </span>
                 )}
               </div>
-              {item.image ? (
-                <div className="aspect-square w-full overflow-hidden rounded-xl bg-black/25">
+              <div className="aspect-square w-full overflow-hidden rounded-xl bg-black/25">
+                {item.image ? (
                   <img className="h-full w-full object-contain" src={item.image} alt="" />
-                </div>
-              ) : null}
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="min-w-0 break-words text-base font-semibold leading-tight">{item.name}</h2>
-                <span className="flex shrink-0 items-center gap-1 pt-0.5 text-[11px] text-white/55">
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 2" />
-                  </svg>
-                  {when(item.delivery_at)}
-                </span>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-white/25">
+                    <Icon name="image" className="h-8 w-8" />
+                  </div>
+                )}
               </div>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-sm">
-                <dt className="text-white/45">Narxi:</dt>
-                <dd className="text-right font-semibold text-[#c6f135]">{money(item.price)}</dd>
-                <dt className="text-white/45">Rangi:</dt>
-                <dd className="truncate text-right text-white/85">{item.color}</dd>
-                {item.client_name ? (
-                  <>
-                    <dt className="text-white/45">Buyurtmachi:</dt>
-                    <dd className="truncate text-right text-white/85">{item.client_name}</dd>
-                  </>
-                ) : null}
+              <div className="flex flex-col gap-1">
+                <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                  <h2 className="min-w-0 break-words text-sm font-semibold leading-snug sm:text-base">{item.name}</h2>
+                  <span
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] text-white/60 sm:text-[11px]"
+                    title="Yetkazib berish vaqti"
+                  >
+                    <Icon name="clock" className="h-3 w-3" />
+                    {when(item.delivery_at)}
+                  </span>
+                </div>
+                <p className="text-base font-semibold text-[#c6f135] sm:text-lg">{money(item.price)}</p>
+              </div>
+              <dl className="grid grid-cols-2 gap-x-2 gap-y-2.5 border-t border-white/10 pt-3">
+                <Info icon="palette" label="Rang" value={item.color} />
+                <Info icon="user" label="Buyurtmachi" value={item.client_name ?? "Ombor"} />
+                <div className="col-span-2">
+                  <Info icon="pin" label="Manzil" value={shortAddress(item.address)} title={item.address} />
+                </div>
               </dl>
-              <p className="flex items-start gap-1.5 text-sm text-white/70">
-                <svg className="mt-0.5 h-4 w-4 shrink-0 text-white/45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
-                  <circle cx="12" cy="9.5" r="2.5" />
-                </svg>
-                <span className="line-clamp-2">{item.address}</span>
-              </p>
-              <div className="mt-auto flex flex-col gap-2 pt-1">
+              <div className="mt-auto grid gap-2 sm:grid-cols-2">
                 <a
-                  className="flex items-center justify-center gap-1.5 rounded-full border border-white/15 py-2 text-sm font-semibold text-white/85"
+                  className="btn-ghost flex items-center justify-center gap-1.5 py-2 text-sm"
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
-                    <path d="M9 4v14M15 6v14" />
-                  </svg>
+                  <Icon name="map" className="h-4 w-4" />
                   Manzil
                 </a>
                 <button
@@ -297,9 +294,7 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
                     setPayment("cash")
                   }}
                 >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12l5 5L20 7" />
-                  </svg>
+                  <Icon name="check" className="h-4 w-4" />
                   Sotildi
                 </button>
               </div>
@@ -509,7 +504,17 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
             action={onSell}
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 className="text-xl font-semibold">Sotildi</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Sotildi</h2>
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none text-white/70 hover:text-white"
+                type="button"
+                aria-label="Yopish"
+                onClick={() => setSelling(null)}
+              >
+                ×
+              </button>
+            </div>
             <p className="mt-1 text-white/70">{selling.name}</p>
             <p className="mb-4 text-[#c6f135]">{money(selling.price)}</p>
             <input type="hidden" name="product_id" value={selling.id} />
@@ -538,38 +543,82 @@ export function Catalog({ products, types, isAdmin }: { products: Product[]; typ
   )
 }
 
-async function decode(file: File): Promise<ImageBitmap | HTMLImageElement | null> {
-  try {
-    return await createImageBitmap(file)
-  } catch {
-    // fall through
-  }
-  const url = URL.createObjectURL(file)
-  try {
-    const img = new Image()
-    img.src = url
-    await img.decode()
-    return img
-  } catch {
-    return null
-  } finally {
-    URL.revokeObjectURL(url)
-  }
+function shortAddress(address: string) {
+  return address.split(/[\s,]+/).filter(Boolean).slice(0, 2).join(" ")
 }
 
-async function compress(file: File) {
-  const source = await decode(file)
-  if (!source) return ""
-  const width = "naturalWidth" in source ? source.naturalWidth : source.width
-  const height = "naturalHeight" in source ? source.naturalHeight : source.height
-  const max = 1024
-  const scale = Math.min(1, max / Math.max(width, height, 1))
-  const canvas = document.createElement("canvas")
-  canvas.width = Math.max(1, Math.round(width * scale))
-  canvas.height = Math.max(1, Math.round(height * scale))
-  const ctx = canvas.getContext("2d")
-  if (!ctx) return ""
-  ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
-  if ("close" in source) source.close()
-  return canvas.toDataURL("image/jpeg", 0.7)
+function Info({ icon, label, value, title }: { icon: IconName; label: string; value: string; title?: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.06em] text-white/45 sm:text-[11px]">
+        <Icon name={icon} className="h-3 w-3 shrink-0" />
+        {label}
+      </dt>
+      <dd className="mt-0.5 truncate text-sm text-white/85" title={title ?? value}>
+        {value}
+      </dd>
+    </div>
+  )
+}
+
+type IconName = "clock" | "palette" | "user" | "pin" | "map" | "check" | "image"
+
+const ICONS: Record<IconName, React.ReactNode> = {
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  palette: (
+    <>
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.9 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.3-4-7.7-9-7.7z" />
+      <circle cx="7.5" cy="11" r="1" />
+      <circle cx="10.5" cy="7" r="1" />
+      <circle cx="15" cy="7.5" r="1" />
+    </>
+  ),
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </>
+  ),
+  map: (
+    <>
+      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+      <path d="M9 4v14M15 6v14" />
+    </>
+  ),
+  check: <path d="M5 12l5 5L20 7" />,
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="m21 16-5-5-9 9" />
+    </>
+  ),
+}
+
+function Icon({ name, className }: { name: IconName; className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {ICONS[name]}
+    </svg>
+  )
 }

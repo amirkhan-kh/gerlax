@@ -1,12 +1,17 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password
+from app.modules.products.service import save_image
 from app.modules.users.models import ROLES, User
 from app.modules.users.repository import UserRepository
-from app.modules.users.schemas import UserCreate, UserUpdate
+from app.modules.users.schemas import ProfileUpdate, UserCreate, UserStatOut, UserUpdate
 
 repo = UserRepository()
+TASHKENT = ZoneInfo("Asia/Tashkent")
 
 
 def _check_role(role: str) -> None:
@@ -17,6 +22,30 @@ def _check_role(role: str) -> None:
 class UserService:
     async def list_all(self, db: AsyncSession) -> list[User]:
         return await repo.list_all(db)
+
+    async def stats(self, db: AsyncSession) -> list[UserStatOut]:
+        now = datetime.now(TASHKENT)
+        month = now.strftime("%Y-%m")
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        sales = await repo.sales_since(db, start)
+        return [
+            UserStatOut(
+                user_id=user.id,
+                last_seen_at=user.last_seen_at,
+                active_seconds=user.active_seconds if user.active_month == month else 0,
+                sales_count=sales.get(user.id, (0, 0))[0],
+                sales_sum=sales.get(user.id, (0, 0))[1],
+            )
+            for user in await repo.list_all(db)
+        ]
+
+    async def update_profile(self, db: AsyncSession, user: User, data: ProfileUpdate) -> User:
+        user.name = data.name.strip()
+        user.phone = data.phone.strip()
+        if data.avatar is not None:
+            user.avatar = save_image(data.avatar) if data.avatar else None
+        await db.flush()
+        return user
 
     async def create(self, db: AsyncSession, data: UserCreate) -> User:
         _check_role(data.role)

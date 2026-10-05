@@ -6,6 +6,15 @@ export type User = {
   phone: string
   login: string
   role: Role
+  avatar: string | null
+}
+
+export type UserStat = {
+  user_id: number
+  last_seen_at: string | null
+  active_seconds: number
+  sales_count: number
+  sales_sum: number
 }
 
 export type ProductType = { id: number; name: string }

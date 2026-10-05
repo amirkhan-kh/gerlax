@@ -44,4 +44,5 @@ class Sale(Base):
     paid_amount: Mapped[int] = mapped_column(Integer)
     debt_amount: Mapped[int] = mapped_column(Integer)
     sold_by_name: Mapped[str] = mapped_column(String(120))
+    sold_by_id: Mapped[int | None] = mapped_column(Integer, index=True)
     sold_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

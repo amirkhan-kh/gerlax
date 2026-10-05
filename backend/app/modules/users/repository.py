@@ -1,6 +1,9 @@
-from sqlalchemy import select
+from datetime import datetime
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.products.models import Sale
 from app.modules.users.models import User
 
 
@@ -19,6 +22,14 @@ class UserRepository:
     async def count_admins(self, db: AsyncSession) -> int:
         result = await db.scalars(select(User).where(User.role == "admin"))
         return len(result.all())
+
+    async def sales_since(self, db: AsyncSession, since: datetime) -> dict[int, tuple[int, int]]:
+        result = await db.execute(
+            select(Sale.sold_by_id, func.count(Sale.id), func.coalesce(func.sum(Sale.price), 0))
+            .where(Sale.sold_by_id.is_not(None), Sale.sold_at >= since)
+            .group_by(Sale.sold_by_id)
+        )
+        return {row[0]: (row[1], row[2]) for row in result.all()}
 
     def add(self, db: AsyncSession, user: User) -> None:
         db.add(user)

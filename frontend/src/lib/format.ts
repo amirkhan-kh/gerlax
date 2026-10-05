@@ -19,3 +19,10 @@ export function when(iso: string) {
   )
   return `${parts.day}-${MONTHS[Number(parts.month) - 1]}, ${parts.hour}:${parts.minute}`
 }
+
+export function duration(seconds: number) {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  if (hours === 0) return `${minutes} daq`
+  return `${hours} soat ${minutes} daq`
+}

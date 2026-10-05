@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.deps import require_admin
+from app.core.deps import get_current_user, require_admin
 from app.modules.users.models import User
-from app.modules.users.schemas import UserCreate, UserOut, UserUpdate
+from app.modules.users.schemas import ProfileUpdate, UserCreate, UserOut, UserStatOut, UserUpdate
 from app.modules.users.service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -17,6 +17,23 @@ async def list_users(
     _: User = Depends(require_admin),
 ) -> list[User]:
     return await service.list_all(db)
+
+
+@router.get("/stats", response_model=list[UserStatOut])
+async def user_stats(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> list[UserStatOut]:
+    return await service.stats(db)
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_profile(
+    data: ProfileUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> User:
+    return await service.update_profile(db, user, data)
 
 
 @router.post("", response_model=UserOut)

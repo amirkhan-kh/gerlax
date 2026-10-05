@@ -170,6 +170,26 @@ export async function updateUser(formData: FormData) {
   return { ok: true as const }
 }
 
+export async function updateProfile(formData: FormData) {
+  const avatar = formData.get("avatar")
+  if (typeof avatar === "string" && avatar && !avatar.startsWith("data:image/")) return { error: "Rasm yuklang" }
+  try {
+    await api("/api/v1/users/me", {
+      method: "PATCH",
+      body: JSON.stringify({
+        name: String(formData.get("name") ?? "").trim(),
+        phone: String(formData.get("phone") ?? "").trim(),
+        avatar: typeof avatar === "string" ? avatar : null,
+      }),
+    })
+  } catch (error) {
+    return asError(error)
+  }
+  touch()
+  revalidatePath("/profile")
+  return { ok: true as const }
+}
+
 export async function deleteUser(formData: FormData) {
   try {
     await api(`/api/v1/users/${Number(formData.get("id"))}`, { method: "DELETE" })

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -9,6 +11,21 @@ class UserOut(BaseModel):
     phone: str
     login: str
     role: str
+    avatar: str | None = None
+
+
+class UserStatOut(BaseModel):
+    user_id: int
+    last_seen_at: datetime | None
+    active_seconds: int
+    sales_count: int
+    sales_sum: int
+
+
+class ProfileUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    phone: str = Field(min_length=5, max_length=32)
+    avatar: str | None = None
 
 
 class UserCreate(BaseModel):
