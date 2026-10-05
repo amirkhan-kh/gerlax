@@ -49,7 +49,7 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
     const result = await returnSale(formData)
     setPending(false)
     if ("error" in result) {
-      setError(result.error)
+      setError(result.error ?? "Xatolik yuz berdi")
       return
     }
     setReturning(null)
