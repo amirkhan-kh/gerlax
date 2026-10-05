@@ -29,6 +29,10 @@ class ProductOut(BaseModel):
 
 
 class ArchivedOut(ProductOut):
+    status: str
+    sold_at: datetime | None = None
+    sold_by_name: str | None = None
+    paid_amount: int | None = None
     archive_kind: str | None
     archive_reason: str | None
     archived_by_name: str | None

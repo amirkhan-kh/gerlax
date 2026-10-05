@@ -36,6 +36,10 @@ export type Product = {
 }
 
 export type ArchivedProduct = Product & {
+  status: "sold" | "archived"
+  sold_at: string | null
+  sold_by_name: string | null
+  paid_amount: number | null
   archive_kind: "cancelled" | "defect" | null
   archive_reason: string | null
   archived_by_name: string | null

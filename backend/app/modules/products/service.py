@@ -64,9 +64,13 @@ def to_product(product: Product) -> ProductOut:
     )
 
 
-def to_archived(product: Product) -> ArchivedOut:
+def to_archived(product: Product, sale: Sale | None = None) -> ArchivedOut:
     return ArchivedOut(
         **to_product(product).model_dump(),
+        status=product.status,
+        sold_at=sale.sold_at if sale else None,
+        sold_by_name=sale.sold_by_name if sale else None,
+        paid_amount=sale.paid_amount if sale else None,
         archive_kind=product.archive_kind,
         archive_reason=product.archive_reason,
         archived_by_name=product.archived_by_name,
@@ -181,8 +185,8 @@ class ProductService:
         return [to_sale(row) for row in rows]
 
     async def list_archive(self, db: AsyncSession) -> list[ArchivedOut]:
-        rows = await repo.list_products(db, status="archived")
-        return [to_archived(row) for row in rows]
+        rows = await repo.list_archive(db)
+        return [to_archived(product, sale) for product, sale in rows]
 
     async def cancel(self, db: AsyncSession, user: User, product_id: int, data: CancelIn) -> None:
         if data.action not in CANCEL_ACTIONS:

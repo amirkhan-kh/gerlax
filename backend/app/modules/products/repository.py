@@ -29,6 +29,16 @@ class ProductRepository:
         )
         return list(result.all())
 
+    async def list_archive(self, db: AsyncSession) -> list[tuple[Product, Sale | None]]:
+        result = await db.execute(
+            select(Product, Sale)
+            .options(selectinload(Product.type))
+            .outerjoin(Sale, (Sale.product_id == Product.id) & (Sale.status == "sold"))
+            .where(Product.status.in_(("archived", "sold")))
+            .order_by(func.coalesce(Product.archived_at, Sale.sold_at).desc())
+        )
+        return [(row[0], row[1]) for row in result.all()]
+
     async def get_sale(self, db: AsyncSession, sale_id: int) -> Sale | None:
         return await db.get(Sale, sale_id)
 
