@@ -9,6 +9,8 @@ import { Pagination } from "@/components/pagination"
 import { money, when } from "@/lib/format"
 import type { Sale, User } from "@/lib/types"
 
+import { printReceipt } from "./print-receipt"
+
 const PAYMENT: Record<string, string> = {
   full: "To'liq",
   partial: "Qisman (nasiya)",
@@ -125,6 +127,11 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
               <Row label="Sana" value={when(sale.sold_at)} />
               {sale.debt_amount > 0 ? <Row label="Nasiya" value={money(sale.debt_amount)} danger /> : null}
             </dl>
+            {me.role === "admin" ? (
+              <button className="btn-ghost py-2 text-sm" type="button" onClick={() => printReceipt(sale)}>
+                Chek chiqarish
+              </button>
+            ) : null}
             {sale.status === "returned" ? (
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-sm">
                 <p className="font-semibold text-red-400">
