@@ -59,6 +59,7 @@ export type Sale = {
   id: number
   product_name: string
   type_name: string
+  client_name: string | null
   address: string
   price: number
   quantity: number

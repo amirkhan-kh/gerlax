@@ -96,6 +96,7 @@ def to_sale(sale: Sale) -> SaleOut:
         id=sale.id,
         product_name=sale.product_name,
         type_name=sale.type_name,
+        client_name=sale.client_name,
         address=sale.address,
         price=sale.price,
         quantity=sale.quantity,
@@ -242,6 +243,7 @@ class ProductService:
         sale = Sale(
             product_name=product.name,
             type_name=product.type.name,
+            client_name=product.client_name,
             address=product.address,
             price=total,
             quantity=quantity,

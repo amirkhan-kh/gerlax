@@ -47,7 +47,9 @@ export function printReceipt(sale: Sale) {
   ${row("Sana", fullDate(sale.sold_at))}
   ${row("Sotuvchi", sale.sold_by_name)}
   <div class="hr"></div>
-  <div class="b">${esc(sale.product_name)}</div>
+  ${row("Klient", sale.client_name ?? "—")}
+  <div class="hr"></div>
+  ${row("Tovar", sale.product_name)}
   ${row("Turi", sale.type_name)}
   ${row(`${sale.quantity} x ${money(Math.round(sale.price / sale.quantity))}`, money(sale.price))}
   <div class="hr"></div>

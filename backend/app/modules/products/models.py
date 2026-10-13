@@ -56,6 +56,7 @@ class Sale(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     product_name: Mapped[str] = mapped_column(String(160))
     type_name: Mapped[str] = mapped_column(String(80))
+    client_name: Mapped[str | None] = mapped_column(String(120))
     address: Mapped[str] = mapped_column(String(300))
     color: Mapped[str] = mapped_column(String(80), server_default="")
     price: Mapped[int] = mapped_column(Integer)

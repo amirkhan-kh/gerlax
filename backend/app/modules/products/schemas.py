@@ -96,6 +96,7 @@ class SaleOut(BaseModel):
     id: int
     product_name: str
     type_name: str
+    client_name: str | None = None
     address: str
     price: int
     quantity: int
