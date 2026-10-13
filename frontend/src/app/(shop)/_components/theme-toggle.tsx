@@ -23,7 +23,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <button className="rounded-full border border-white/15 px-3 py-1" type="button" onClick={toggle}>
+    <button className="nav-link border border-white/15" type="button" onClick={toggle}>
       {mode === "dark" ? "Light" : "Dark"}
     </button>
   )

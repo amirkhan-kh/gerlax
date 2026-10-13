@@ -1,6 +1,18 @@
-export type IconName = "clock" | "palette" | "user" | "pin" | "map" | "check" | "image" | "undo" | "ban" | "pen"
+export type IconName = "clock" | "palette" | "user" | "pin" | "map" | "check" | "image" | "undo" | "ban" | "pen" | "box" | "tag"
 
 const ICONS: Record<IconName, React.ReactNode> = {
+  box: (
+    <>
+      <path d="M21 8 12 3 3 8v8l9 5 9-5V8z" />
+      <path d="m3 8 9 5 9-5M12 13v8" />
+    </>
+  ),
+  tag: (
+    <>
+      <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </>
+  ),
   pen: (
     <>
       <path d="M12 20h9" />

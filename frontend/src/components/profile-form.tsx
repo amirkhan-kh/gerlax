@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { updateProfile } from "@/actions/shop"
+import { safe, toast } from "@/components/toast"
 import { compress } from "@/lib/image"
 import { roleLabel, type User } from "@/lib/types"
 
@@ -27,7 +28,7 @@ export function ProfileForm({ me }: { me: User }) {
 
   async function onSave(formData: FormData) {
     setPending(true)
-    const result = await updateProfile(formData)
+    const result = await safe(() => updateProfile(formData))
     setPending(false)
     if ("error" in result) {
       setError(result.error)
@@ -37,6 +38,7 @@ export function ProfileForm({ me }: { me: User }) {
     setError("")
     setAvatar(null)
     setSaved(true)
+    toast("Profil saqlandi")
   }
 
   return (

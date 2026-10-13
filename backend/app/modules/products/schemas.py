@@ -16,12 +16,13 @@ class ProductOut(BaseModel):
     id: int
     type_id: int
     type_name: str
+    order_id: int | None = None
     name: str
     address: str
-    image: str | None = None
+    image_key: str | None = None
     client_name: str | None = None
-    color: str
     price: int
+    quantity: int
     delivery_at: datetime
     created_by_name: str
     created_by_id: int | None = None
@@ -58,20 +59,37 @@ class SummaryOut(BaseModel):
     month_archived: int
 
 
-class ProductCreate(BaseModel):
+class ItemIn(BaseModel):
     type_id: int
     name: str = Field(min_length=1, max_length=160)
-    address: str = Field(min_length=1, max_length=300)
     image: str | None = None
-    client_name: str | None = Field(default=None, max_length=120)
-    color: str = Field(min_length=1, max_length=80)
     price: int = Field(gt=0)
+    quantity: int = Field(default=1, ge=1, le=100_000)
+
+
+class OrderCreate(BaseModel):
+    client_name: str | None = Field(default=None, max_length=120)
+    address: str = Field(min_length=1, max_length=300)
+    delivery_at: datetime
+    items: list[ItemIn] = Field(min_length=1, max_length=30)
+
+
+class ProductUpdate(BaseModel):
+    type_id: int
+    name: str = Field(min_length=1, max_length=160)
+    image: str | None = None
+    remove_image: bool = False
+    price: int = Field(gt=0)
+    quantity: int = Field(ge=1, le=100_000)
+    client_name: str | None = Field(default=None, max_length=120)
+    address: str = Field(min_length=1, max_length=300)
     delivery_at: datetime
 
 
 class SellIn(BaseModel):
     payment_kind: str
     paid_amount: int | None = None
+    quantity: int | None = Field(default=None, ge=1)
 
 
 class SaleOut(BaseModel):
@@ -79,8 +97,8 @@ class SaleOut(BaseModel):
     product_name: str
     type_name: str
     address: str
-    color: str
     price: int
+    quantity: int
     delivery_at: datetime
     payment_kind: str
     paid_amount: int

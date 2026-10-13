@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.modules.products.models import Cancellation, Product, ProductType, Sale
+from app.modules.products.models import Cancellation, Order, Product, ProductType, Sale
 
 
 class ProductRepository:
@@ -66,6 +66,19 @@ class ProductRepository:
             select(Product).options(selectinload(Product.type)).where(Product.id == product_id)
         )
         return result.first()
+
+    async def get_image(self, db: AsyncSession, product_id: int) -> str | None:
+        return await db.scalar(select(Product.image).where(Product.id == product_id))
+
+    async def list_order_products(self, db: AsyncSession, order_id: int) -> list[Product]:
+        result = await db.scalars(select(Product).where(Product.order_id == order_id, Product.status == "active"))
+        return list(result.all())
+
+    async def get_order(self, db: AsyncSession, order_id: int) -> Order | None:
+        return await db.get(Order, order_id)
+
+    def add_order(self, db: AsyncSession, order: Order) -> None:
+        db.add(order)
 
     def add_product(self, db: AsyncSession, product: Product) -> None:
         db.add(product)

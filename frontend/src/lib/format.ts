@@ -1,5 +1,5 @@
 export function money(value: number) {
-  return `${new Intl.NumberFormat("uz-UZ").format(value)} so'm`
+  return `${String(Math.round(value)).replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`
 }
 
 const MONTHS = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"]
@@ -18,6 +18,23 @@ export function when(iso: string) {
       .map((part) => [part.type, part.value]),
   )
   return `${parts.day}-${MONTHS[Number(parts.month) - 1]}, ${parts.hour}:${parts.minute}`
+}
+
+export function localInput(iso: string) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      timeZone: "Asia/Tashkent",
+    })
+      .formatToParts(new Date(iso))
+      .map((part) => [part.type, part.value]),
+  )
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`
 }
 
 export function duration(seconds: number) {

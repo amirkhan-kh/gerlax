@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 import { createType, createUser, deleteUser, updateUser } from "@/actions/shop"
 import { ProfileForm } from "@/components/profile-form"
+import { safe, toast } from "@/components/toast"
 import { duration, money, when } from "@/lib/format"
 import {
   ROLES,
@@ -65,9 +66,9 @@ export function AdminPanel({
   const monthSales = stats.reduce((sum, item) => sum + item.sales_count, 0)
   const monthRevenue = stats.reduce((sum, item) => sum + item.sales_sum, 0)
 
-  async function run(action: (formData: FormData) => Promise<Result>, formData: FormData) {
+  async function run(action: (formData: FormData) => Promise<Result>, formData: FormData, done: string) {
     setPending(true)
-    const result = await action(formData)
+    const result = await safe(() => action(formData))
     setPending(false)
     if ("error" in result) {
       setError(result.error)
@@ -75,6 +76,7 @@ export function AdminPanel({
     }
     setError("")
     setModal(null)
+    toast(done)
   }
 
   return (
@@ -172,7 +174,7 @@ export function AdminPanel({
                         {online(stat) ? "Hozir" : stat?.last_seen_at ? when(stat.last_seen_at) : "—"}
                       </td>
                       <td className="px-4 py-3">
-                        <Actions user={user} me={me} pending={pending} onEdit={() => setModal(user)} onDelete={(fd) => run(deleteUser, fd)} />
+                        <Actions user={user} me={me} pending={pending} onEdit={() => setModal(user)} onDelete={(fd) => run(deleteUser, fd, "Xodim o'chirildi")} />
                       </td>
                     </tr>
                   )
@@ -188,7 +190,7 @@ export function AdminPanel({
                 <article key={user.id} className="card flex flex-col gap-3 p-3">
                   <div className="flex items-start justify-between gap-2">
                     <Person user={user} online={online(stat)} />
-                    <Actions user={user} me={me} pending={pending} onEdit={() => setModal(user)} onDelete={(fd) => run(deleteUser, fd)} />
+                    <Actions user={user} me={me} pending={pending} onEdit={() => setModal(user)} onDelete={(fd) => run(deleteUser, fd, "Xodim o'chirildi")} />
                   </div>
                   <dl className="grid grid-cols-3 gap-2 rounded-xl border border-white/10 p-2 text-center">
                     <Metric label="Bu oy faol" value={duration(stat?.active_seconds ?? 0)} />
@@ -212,7 +214,7 @@ export function AdminPanel({
 
       {tab === "types" ? (
         <section className="card flex flex-col gap-4 p-4">
-          <form className="flex gap-2" action={(formData) => run(createType, formData)}>
+          <form className="flex gap-2" action={(formData) => run(createType, formData, `“${formData.get("name")}” turi qo'shildi`)}>
             <input className="field" name="name" placeholder="Yangi tovar turi" required />
             <button className="btn shrink-0 px-5" type="submit" disabled={pending}>
               Qo&apos;shish
@@ -240,7 +242,9 @@ export function AdminPanel({
         <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 p-3 sm:items-center" onClick={() => setModal(null)}>
           <form
             className="glass max-h-[90vh] w-full max-w-md overflow-auto p-5"
-            action={(formData) => run(modal === "new" ? createUser : updateUser, formData)}
+            action={(formData) =>
+              run(modal === "new" ? createUser : updateUser, formData, modal === "new" ? "Yangi xodim qo'shildi" : "Xodim ma'lumotlari yangilandi")
+            }
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">

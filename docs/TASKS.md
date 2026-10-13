@@ -62,6 +62,7 @@ Qoida: 1 sessiya = 1 task. Tugagach `[x]` belgilanadi. Tartib buzilmaydi.
 - [x] 8.2 Buyurtma modal: X yopish, kamera auto ochilish (barcha qurilma), rasm DB da data URL (har qanday format → JPEG), tovar kartada rasm
 - [x] 8.3 Karta: qisqa manzil + "Manzil" xarita tugmasi; klient ismi; admin "Ombor uchun"; 6 talik pagination
 - [x] 8.4 Sotuv cheki: admin sotuv kartadan 80mm chekni har qanday ulangan printerga chiqaradi (brauzer print)
+- [x] 8.5 Tovarlar: Sotuv/Ombor filtri, soni stepper, rang olib tashlash, bitta klientga ko'p tovar (savat), tahrirlash, toastlar, navigatsiya tezligi
 
 
 

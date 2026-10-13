@@ -13,17 +13,30 @@ class ProductType(Base):
     name: Mapped[str] = mapped_column(String(80), unique=True)
 
 
+class Order(Base):
+    __tablename__ = "orders"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    client_name: Mapped[str] = mapped_column(String(120))
+    created_by_id: Mapped[int | None] = mapped_column(Integer)
+    created_by_name: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class Product(Base):
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     type_id: Mapped[int] = mapped_column(ForeignKey("product_types.id"))
+    order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id", ondelete="SET NULL"), index=True)
     name: Mapped[str] = mapped_column(String(160))
     address: Mapped[str] = mapped_column(String(300))
-    image: Mapped[str | None] = mapped_column(Text)
+    image: Mapped[str | None] = mapped_column(Text, deferred=True)
+    image_key: Mapped[str | None] = mapped_column(String(32))
     client_name: Mapped[str | None] = mapped_column(String(120))
-    color: Mapped[str] = mapped_column(String(80))
+    color: Mapped[str] = mapped_column(String(80), server_default="")
     price: Mapped[int] = mapped_column(Integer)
+    quantity: Mapped[int] = mapped_column(Integer, server_default="1")
     delivery_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_by_name: Mapped[str] = mapped_column(String(120))
     created_by_id: Mapped[int | None] = mapped_column(Integer, index=True)
@@ -44,8 +57,9 @@ class Sale(Base):
     product_name: Mapped[str] = mapped_column(String(160))
     type_name: Mapped[str] = mapped_column(String(80))
     address: Mapped[str] = mapped_column(String(300))
-    color: Mapped[str] = mapped_column(String(80))
+    color: Mapped[str] = mapped_column(String(80), server_default="")
     price: Mapped[int] = mapped_column(Integer)
+    quantity: Mapped[int] = mapped_column(Integer, server_default="1")
     delivery_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     payment_kind: Mapped[str] = mapped_column(String(16))
     paid_amount: Mapped[int] = mapped_column(Integer)

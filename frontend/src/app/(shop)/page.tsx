@@ -1,5 +1,5 @@
-import { api, rethrow } from "@/lib/api"
-import type { Product, ProductType, User } from "@/lib/types"
+import { api, getMe, rethrow } from "@/lib/api"
+import type { Product, ProductType } from "@/lib/types"
 
 import { Catalog } from "./_components/catalog"
 
@@ -10,7 +10,7 @@ export default async function HomePage() {
     const [products, types, me] = await Promise.all([
       api<Product[]>("/api/v1/products"),
       api<ProductType[]>("/api/v1/products/types"),
-      api<User>("/api/v1/auth/me"),
+      getMe(),
     ])
     return <Catalog products={products} types={types} me={me} />
   } catch (error) {

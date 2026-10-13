@@ -1,5 +1,8 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { cache } from "react"
+
+import type { User } from "./types"
 
 export function backendUrl(path: string): string {
   const base = process.env.VERCEL
@@ -42,3 +45,5 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
 }
+
+export const getMe = cache(() => api<User>("/api/v1/auth/me"))

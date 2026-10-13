@@ -49,8 +49,7 @@ export function printReceipt(sale: Sale) {
   <div class="hr"></div>
   <div class="b">${esc(sale.product_name)}</div>
   ${row("Turi", sale.type_name)}
-  ${row("Rangi", sale.color)}
-  ${row("1 x " + money(sale.price), money(sale.price))}
+  ${row(`${sale.quantity} x ${money(Math.round(sale.price / sale.quantity))}`, money(sale.price))}
   <div class="hr"></div>
   <div class="row b big"><span>JAMI</span><span>${esc(money(sale.price))}</span></div>
   ${row("To'lov turi", PAYMENT[sale.payment_kind] ?? sale.payment_kind)}

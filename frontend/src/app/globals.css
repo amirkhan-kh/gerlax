@@ -256,3 +256,131 @@ html.light .bg-black\/25 {
 html.light .text-red-300 {
   color: #b42318;
 }
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: rgba(244, 241, 234, 0.8);
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link[aria-current="page"] {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+html.light .nav-link {
+  color: rgba(20, 18, 14, 0.75);
+}
+
+html.light .nav-link:hover {
+  background: rgba(20, 18, 14, 0.05);
+}
+
+html.light .nav-link[aria-current="page"] {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.nav-pending {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: blink 0.9s ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.skeleton {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+html.light .skeleton {
+  background: rgba(20, 18, 14, 0.06);
+}
+
+.toast {
+  animation: toast-in 200ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stepper button {
+  display: flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(198, 241, 53, 0.55);
+  color: var(--lime);
+  font-size: 1.5rem;
+  line-height: 1;
+  touch-action: manipulation;
+}
+
+.stepper button:disabled {
+  opacity: 0.35;
+}
+
+.stepper input {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--cream);
+  appearance: textfield;
+}
+
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+html.light .stepper button {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--ink);
+}
+
+html.light .stepper input {
+  color: var(--ink);
+}

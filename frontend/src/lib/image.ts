@@ -17,6 +17,10 @@ async function decode(file: File): Promise<ImageBitmap | HTMLImageElement | null
   }
 }
 
+export function productImage(item: { id: number; image_key: string | null }) {
+  return item.image_key ? `/img/${item.id}?v=${item.image_key}` : null
+}
+
 export async function compress(file: File, max = 1024) {
   const source = await decode(file)
   if (!source) return ""

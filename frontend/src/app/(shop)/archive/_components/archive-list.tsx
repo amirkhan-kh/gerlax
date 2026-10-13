@@ -5,6 +5,7 @@ import { useState } from "react"
 import { Icon, type IconName } from "@/components/icon"
 import { Pagination } from "@/components/pagination"
 import { money, when } from "@/lib/format"
+import { productImage } from "@/lib/image"
 import type { ArchivedProduct } from "@/lib/types"
 
 const PAGE_SIZE = 6
@@ -28,12 +29,13 @@ export function ArchiveList({ items }: { items: ArchivedProduct[] }) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((item) => {
           const outcome = OUTCOME[item.status === "sold" ? "sold" : (item.archive_kind ?? "cancelled")]
+          const image = productImage(item)
           return (
             <article key={item.id} className="card relative flex gap-3 overflow-hidden p-3 pl-4">
               <span className={`absolute inset-y-0 left-0 w-1 ${outcome.accent}`} />
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-black/25">
-                {item.image ? (
-                  <img className="h-full w-full object-contain" src={item.image} alt="" />
+                {image ? (
+                  <img className="h-full w-full object-contain" src={image} alt="" loading="lazy" decoding="async" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-white/25">
                     <Icon name="image" className="h-6 w-6" />
@@ -49,7 +51,10 @@ export function ArchiveList({ items }: { items: ArchivedProduct[] }) {
                   </span>
                 </div>
                 <h2 className="truncate font-semibold">{item.name}</h2>
-                <p className="text-sm font-semibold text-[#c6f135]">{money(item.price)}</p>
+                <p className="text-sm font-semibold text-[#c6f135]">
+                  {money(item.price * item.quantity)}
+                  {item.quantity > 1 ? <span className="ml-1 text-xs font-normal text-white/55">· {item.quantity} dona</span> : null}
+                </p>
                 <p className="truncate text-xs text-white/55">Kiritgan: {item.created_by_name}</p>
                 {item.client_name ? <p className="truncate text-xs text-white/55">Buyurtmachi: {item.client_name}</p> : null}
                 {item.status === "sold" ? (

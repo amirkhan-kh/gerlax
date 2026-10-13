@@ -23,12 +23,13 @@ export type Product = {
   id: number
   type_id: number
   type_name: string
+  order_id: number | null
   name: string
   address: string
-  image: string | null
+  image_key: string | null
   client_name: string | null
-  color: string
   price: number
+  quantity: number
   delivery_at: string
   created_by_name: string
   created_by_id: number | null
@@ -59,8 +60,8 @@ export type Sale = {
   product_name: string
   type_name: string
   address: string
-  color: string
   price: number
+  quantity: number
   delivery_at: string
   payment_kind: "full" | "partial" | "cash"
   paid_amount: number

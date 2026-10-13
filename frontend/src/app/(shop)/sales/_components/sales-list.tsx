@@ -6,6 +6,7 @@ import { returnSale } from "@/actions/shop"
 import { Choice } from "@/components/choice"
 import { Icon } from "@/components/icon"
 import { Pagination } from "@/components/pagination"
+import { safe, toast } from "@/components/toast"
 import { money, when } from "@/lib/format"
 import type { Sale, User } from "@/lib/types"
 
@@ -48,11 +49,18 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
 
   async function onReturn(formData: FormData) {
     setPending(true)
-    const result = await returnSale(formData)
+    const result = await safe(() => returnSale(formData))
     setPending(false)
     if ("error" in result) {
       setError(result.error ?? "Xatolik yuz berdi")
       return
+    }
+    if (returning) {
+      toast(
+        condition === "ok"
+          ? `${returning.product_name} qaytarildi va omborga qo'shildi`
+          : `${returning.product_name} qaytarildi va arxivga tushdi`,
+      )
     }
     setReturning(null)
     setError("")
@@ -119,6 +127,11 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
             <div>
               <h2 className="break-words font-semibold leading-snug">{sale.product_name}</h2>
               <p className="text-lg font-semibold text-[#c6f135]">{money(sale.price)}</p>
+              {sale.quantity > 1 ? (
+                <p className="text-xs text-white/55">
+                  {sale.quantity} dona × {money(Math.round(sale.price / sale.quantity))}
+                </p>
+              ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-x-2 gap-y-2.5 border-t border-white/10 pt-3">
               <Row label="To'lov" value={PAYMENT[sale.payment_kind] ?? sale.payment_kind} />
@@ -136,7 +149,7 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-sm">
                 <p className="font-semibold text-red-400">
                   {money(sale.refund_amount)} qaytarildi ·{" "}
-                  {sale.return_condition === "defect" ? "Nuqsonli, arxivda" : "Yaroqli, sotuvga qaytdi"}
+                  {sale.return_condition === "defect" ? "Nuqsonli, arxivda" : "Yaroqli, omborga qaytdi"}
                 </p>
                 <p className="mt-1 text-white/70">{sale.return_reason}</p>
                 <p className="mt-1 text-xs text-white/50">
@@ -182,7 +195,9 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
               </button>
             </div>
             <p className="mt-1 text-white/70">
-              {returning.product_name} · <span className="text-[#c6f135]">{money(returning.price)}</span>
+              {returning.product_name}
+              {returning.quantity > 1 ? ` · ${returning.quantity} dona` : ""} ·{" "}
+              <span className="text-[#c6f135]">{money(returning.price)}</span>
             </p>
             <div className="mt-3 rounded-xl border border-white/10 p-3 text-sm">
               <p>
@@ -199,7 +214,7 @@ export function SalesList({ sales, me }: { sales: Sale[]; me: User }) {
               <Choice
                 active={condition === "ok"}
                 title="Yaroqli"
-                text="Tovar “Sotuv uchun” bo'lib ro'yxatga qaytadi."
+                text="Tovar “Ombor uchun” bo'lib ro'yxatga qaytadi."
                 onClick={() => setCondition("ok")}
               />
               <Choice

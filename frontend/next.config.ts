@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { serverActions: { bodySizeLimit: "4mb" } },
+  experimental: { serverActions: { bodySizeLimit: "4mb" }, staleTimes: { dynamic: 30 } },
   async rewrites() {
     const api = process.env.VERCEL
       ? "http://189.74.99.174"

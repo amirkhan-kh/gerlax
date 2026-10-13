@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -6,8 +6,9 @@ from app.core.deps import get_current_user, require_admin
 from app.modules.products.schemas import (
     ArchivedOut,
     CancelIn,
-    ProductCreate,
+    OrderCreate,
     ProductOut,
+    ProductUpdate,
     ReturnIn,
     SaleOut,
     SellIn,
@@ -66,13 +67,33 @@ async def cancel_product(
     await service.cancel(db, user, product_id, data)
 
 
-@router.post("", response_model=ProductOut)
-async def create_product(
-    data: ProductCreate,
+@router.post("", response_model=list[ProductOut])
+async def create_order(
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> list[ProductOut]:
+    return await service.create_order(db, user, data)
+
+
+@router.patch("/{product_id}", response_model=ProductOut)
+async def update_product(
+    product_id: int,
+    data: ProductUpdate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> ProductOut:
-    return await service.create_product(db, user, data)
+    return await service.update_product(db, user, product_id, data)
+
+
+@router.get("/{product_id}/image")
+async def product_image(
+    product_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> Response:
+    media_type, raw = await service.image(db, product_id)
+    return Response(raw, media_type=media_type, headers={"Cache-Control": "private, max-age=31536000, immutable"})
 
 
 @router.post("/{product_id}/sell", response_model=SaleOut)

@@ -63,32 +63,72 @@ export async function logout() {
   redirect("/login")
 }
 
-export async function createProduct(formData: FormData) {
-  const delivery = String(formData.get("delivery_at") ?? "")
-  const price = Number(formData.get("price"))
-  const image = String(formData.get("image") ?? "")
-  if (!delivery) return { error: "Yetkazish vaqtini kiriting" }
-  if (!Number.isFinite(price) || price <= 0) return { error: "Narxni kiriting" }
-  if (!String(formData.get("name") ?? "").trim()) return { error: "Tovar nomini kiriting" }
-  if (!String(formData.get("address") ?? "").trim()) return { error: "Manzilni kiriting" }
-  if (!String(formData.get("color") ?? "").trim()) return { error: "Rangni kiriting" }
-  if (!formData.get("type_id")) return { error: "Tovar turini tanlang" }
-  if (image && !image.startsWith("data:image/")) return { error: "Rasm yuklang" }
-  const stock = formData.get("stock") === "on"
-  const client = String(formData.get("client_name") ?? "").trim()
-  if (!stock && !client) return { error: "Klient ismini kiriting" }
+type OrderItem = { type_id: number; name: string; image: string | null; price: number; quantity: number }
+
+type OrderInput = { client_name: string | null; address: string; delivery_at: string; items: OrderItem[] }
+
+type ProductInput = OrderItem & {
+  id: number
+  remove_image: boolean
+  client_name: string | null
+  address: string
+  delivery_at: string
+}
+
+function tashkent(delivery: string) {
+  return delivery.length === 16 ? `${delivery}:00+05:00` : delivery
+}
+
+function itemError(item: OrderItem) {
+  if (!item.type_id) return "Tovar turini tanlang"
+  if (!item.name.trim()) return "Tovar nomini kiriting"
+  if (!Number.isFinite(item.price) || item.price <= 0) return "Narxni kiriting"
+  if (!Number.isInteger(item.quantity) || item.quantity < 1) return "Sonini kiriting"
+  if (item.image && !item.image.startsWith("data:image/")) return "Rasm yuklang"
+  return null
+}
+
+export async function createOrder(input: OrderInput) {
+  if (input.items.length === 0) return { error: "Kamida bitta tovar qo'shing" }
+  const invalid = input.items.map(itemError).find(Boolean)
+  if (invalid) return { error: invalid }
+  if (!input.address.trim()) return { error: "Manzilni kiriting" }
+  if (!input.delivery_at) return { error: "Yetkazish vaqtini kiriting" }
   try {
     await api("/api/v1/products", {
       method: "POST",
       body: JSON.stringify({
-        type_id: Number(formData.get("type_id")),
-        name: String(formData.get("name") ?? "").trim(),
-        address: String(formData.get("address") ?? "").trim(),
-        image: image || null,
-        client_name: stock ? null : client,
-        color: String(formData.get("color") ?? "").trim(),
-        price,
-        delivery_at: delivery.length === 16 ? `${delivery}:00+05:00` : delivery,
+        client_name: input.client_name?.trim() || null,
+        address: input.address.trim(),
+        delivery_at: tashkent(input.delivery_at),
+        items: input.items.map((item) => ({ ...item, name: item.name.trim() })),
+      }),
+    })
+  } catch (error) {
+    return asError(error)
+  }
+  touch()
+  return { ok: true as const }
+}
+
+export async function updateProduct(input: ProductInput) {
+  const invalid = itemError(input)
+  if (invalid) return { error: invalid }
+  if (!input.address.trim()) return { error: "Manzilni kiriting" }
+  if (!input.delivery_at) return { error: "Yetkazish vaqtini kiriting" }
+  try {
+    await api(`/api/v1/products/${input.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        type_id: input.type_id,
+        name: input.name.trim(),
+        image: input.image,
+        remove_image: input.remove_image,
+        price: input.price,
+        quantity: input.quantity,
+        client_name: input.client_name?.trim() || null,
+        address: input.address.trim(),
+        delivery_at: tashkent(input.delivery_at),
       }),
     })
   } catch (error) {
@@ -114,7 +154,9 @@ export async function reverseAddress(lat: number, lng: number) {
 
 export async function sellProduct(formData: FormData) {
   const paymentKind = String(formData.get("payment_kind") ?? "")
-  const body: { payment_kind: string; paid_amount?: number } = { payment_kind: paymentKind }
+  const quantity = Number(formData.get("quantity") || 0)
+  const body: { payment_kind: string; paid_amount?: number; quantity?: number } = { payment_kind: paymentKind }
+  if (quantity > 0) body.quantity = quantity
   if (paymentKind === "partial") {
     const paid = Number(formData.get("paid_amount"))
     if (!Number.isFinite(paid)) return { error: "To'langan summani kiriting" }
