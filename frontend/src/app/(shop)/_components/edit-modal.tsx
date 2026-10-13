@@ -90,10 +90,23 @@ export function EditModal({
           {stock ? "Ombor" : "Buyurtma"}
         </div>
         {isAdmin ? (
-          <label className="flex items-center gap-2 text-sm text-white/70">
-            <input type="checkbox" checked={stock} onChange={(event) => setStock(event.target.checked)} />
-            Ombor uchun (klientsiz)
-          </label>
+          <div className="tabs" role="tablist">
+            {[
+              { value: false, label: "Sotuv uchun" },
+              { value: true, label: "Ombor uchun" },
+            ].map((item) => (
+              <button
+                key={item.label}
+                className="tab"
+                type="button"
+                role="tab"
+                aria-selected={stock === item.value}
+                onClick={() => setStock(item.value)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         ) : null}
         {stock ? null : (
           <label className="block text-sm text-white/70">

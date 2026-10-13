@@ -64,6 +64,7 @@ Qoida: 1 sessiya = 1 task. Tugagach `[x]` belgilanadi. Tartib buzilmaydi.
 - [x] 8.4 Sotuv cheki: admin sotuv kartadan 80mm chekni har qanday ulangan printerga chiqaradi (brauzer print)
 - [x] 8.5 Tovarlar: Sotuv/Ombor filtri, soni stepper, rang olib tashlash, bitta klientga ko'p tovar (savat), tahrirlash, toastlar, navigatsiya tezligi
 - [x] 8.6 Sotuv chekida tovar nomi va klient ismi
+- [x] 8.7 Tovar qo'shish: admin uchun Sotuv/Ombor tanlovi tepada, xodimga faqat buyurtma
 
 
 

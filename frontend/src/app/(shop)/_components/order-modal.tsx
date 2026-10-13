@@ -111,11 +111,33 @@ export function OrderModal({ types, isAdmin, onClose }: { types: ProductType[]; 
   }
 
   return (
-    <Modal title="Yangi buyurtma" onClose={onClose}>
+    <Modal title={stock ? "Omborga tovar" : "Yangi buyurtma"} onClose={onClose}>
+      {isAdmin ? (
+        <div className="tabs mb-3" role="tablist">
+          {[
+            { value: false, label: "Sotuv uchun" },
+            { value: true, label: "Ombor uchun" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              className="tab"
+              type="button"
+              role="tab"
+              aria-selected={stock === item.value}
+              onClick={() => {
+                setStock(item.value)
+                setError("")
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <ol className="mb-4 grid grid-cols-2 gap-2 text-xs font-semibold">
         {[
           { id: "items", label: "1. Tovarlar" },
-          { id: "client", label: "2. Klient va tasdiq" },
+          { id: "client", label: stock ? "2. Manzil va tasdiq" : "2. Klient va tasdiq" },
         ].map((item) => (
           <li
             key={item.id}
@@ -197,17 +219,13 @@ export function OrderModal({ types, isAdmin, onClose }: { types: ProductType[]; 
             </button>
           </div>
           <p className="mt-2 text-center text-xs text-white/50">
-            Bitta klient bir nechta tovar olsa, “+ Yana tovar” bilan savatga qo&apos;shing
+            {stock
+              ? "Bir nechta tovarni “+ Yana tovar” bilan savatga qo'shing"
+              : "Bitta klient bir nechta tovar olsa, “+ Yana tovar” bilan savatga qo'shing"}
           </p>
         </>
       ) : (
         <div className="flex flex-col gap-3">
-          {isAdmin ? (
-            <label className="flex items-center gap-2 text-sm text-white/70">
-              <input type="checkbox" checked={stock} onChange={(event) => setStock(event.target.checked)} />
-              Ombor uchun (klientsiz)
-            </label>
-          ) : null}
           {stock ? null : (
             <label className="block text-sm text-white/70">
               Klient ismi
